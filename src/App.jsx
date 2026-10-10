@@ -162,6 +162,21 @@ export default function App() {
     [],
   )
 
+  /* demo helpers — ?skp=1 boots straight to desktop, ?wall & ?app preload */
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search)
+    const wall = q.get('wall')
+    const app = q.get('app')
+    if (wall) actions.setWallpaper(wall)
+    if (q.has('skp') || app) {
+      const t = setTimeout(() => {
+        if (app) actions.openApp(app)
+        actions.unlock()
+      }, 60)
+      return () => clearTimeout(t)
+    }
+  }, [])
+
   /* first-interaction unlocks audio */
   useEffect(() => {
     const unlock = () => sound.unlock()
