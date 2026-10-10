@@ -60,8 +60,11 @@ export default function LockScreen() {
       </div>
 
       <div className="lock__center">
-        <div className={`lock__avatar ${pulse ? 'rs-pulse' : ''}`} style={{ backgroundImage: `url("${profile.avatar}")` }} />
-        <div className="lock__name">{profile.name}</div>
+        <div
+          className={`lock__avatar ${pulse ? 'rs-pulse' : ''}`}
+          style={{ backgroundImage: `url("${state.avatar || profile.avatar}")` }}
+        />
+        <div className="lock__name">{state.name || profile.name}</div>
       </div>
 
       <div className={`lock__field ${shake ? 'shake' : ''}`}>

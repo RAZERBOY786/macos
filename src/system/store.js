@@ -114,6 +114,8 @@ function initialState() {
     desktopFolders: persisted.desktopFolders || ['Projects'],
 
     /* user data */
+    name: persisted.name ?? null,
+    avatar: persisted.avatar ?? null,
     notes: persisted.notes || null,
     reminders: persisted.reminders || null,
     files: persisted.files || null,
@@ -138,13 +140,14 @@ function persist() {
   try {
     const {
       theme, accent, wallpaperId, brightness, volume, muted, wifi, bluetooth,
-      airdrop, dock, desktopFolders, notes, reminders, files, soundOn,
+      airdrop, dock, desktopFolders, notes, reminders, files, soundOn, name, avatar,
     } = state
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
         theme, accent, wallpaperId, brightness, volume, muted, wifi, bluetooth,
         airdrop, dock, desktopFolders, notes, reminders, files, soundOn,
+        name, avatar,
         seenHint: true,
       }),
     )
@@ -238,6 +241,14 @@ export const actions = {
   },
   toggleMute() {
     setPersist({ muted: !state.muted })
+  },
+
+  /* user identity */
+  setAccount(account) {
+    setPersist({
+      name: 'name' in account ? account.name : state.name,
+      avatar: 'avatar' in account ? account.avatar : state.avatar,
+    })
   },
 
   /* toggles */

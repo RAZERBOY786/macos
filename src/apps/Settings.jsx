@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { actions, useSystem } from '../system/store.js'
 import { profile } from '../data/profile.js'
+import sound from '../system/sound.js'
 import Icon from '../icons/UIIcons.jsx'
 
 const NAV = [
+  { id: 'account', name: 'Apple Account', icon: 'user', color: '#007aff' },
   { id: 'wifi', name: 'Wi-Fi', icon: 'wifi', color: '#007aff' },
   { id: 'bluetooth', name: 'Bluetooth', icon: 'bluetooth', color: '#007aff' },
   { id: 'notifications', name: 'Notifications', icon: 'bell', color: '#ff3b30' },
@@ -43,14 +45,62 @@ export default function Settings() {
   const [trueTone, setTrueTone] = useState(true)
   const [notifOn, setNotifOn] = useState(true)
   const [previewsOn, setPreviewsOn] = useState(true)
+  const [draftName, setDraftName] = useState(state.name || profile.name)
+  const [draftAvatar, setDraftAvatar] = useState(state.avatar || '')
+  const fileRef = useRef(null)
+
+  const displayName = state.name || profile.name
+  const displayAvatar = state.avatar || profile.avatar
+
+  const previewAvatar = draftAvatar || profile.avatar
+
+  const readAvatar = (file) => {
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      actions.notify({ title: 'Photo', body: 'Please choose an image file.' })
+      return
+    }
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      const size = 256
+      const canvas = document.createElement('canvas')
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')
+      const side = Math.min(img.width, img.height)
+      ctx.drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size)
+      setDraftAvatar(canvas.toDataURL('image/jpeg', 0.85))
+      URL.revokeObjectURL(url)
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      actions.notify({ title: 'Photo', body: 'Could not read that image.' })
+    }
+    img.src = url
+  }
+
+  const saveAccount = () => {
+    actions.setAccount({ name: draftName.trim() || null, avatar: draftAvatar.trim() || null })
+    actions.notify({ title: 'Apple Account', body: 'Your name and photo were updated.' })
+    sound.click()
+  }
+
+  const resetAccount = () => {
+    setDraftName('')
+    setDraftAvatar('')
+    actions.setAccount({ name: null, avatar: null })
+    actions.notify({ title: 'Apple Account', body: 'Back to the default profile.' })
+    sound.click()
+  }
 
   return (
     <div className="settings">
       <div className="settings__side">
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px 14px' }}>
-          <span style={{ width: 40, height: 40, borderRadius: '50%', backgroundImage: `url("${profile.avatar}")`, backgroundSize: 'cover' }} />
+          <span style={{ width: 40, height: 40, borderRadius: '50%', backgroundImage: `url("${displayAvatar}")`, backgroundSize: 'cover' }} />
           <div style={{ lineHeight: 1.2 }}>
-            <b style={{ fontSize: 13 }}>{profile.name}</b>
+            <b style={{ fontSize: 13 }}>{displayName}</b>
             <div style={{ fontSize: 11, color: 'var(--text-3)' }}>Apple Account</div>
           </div>
         </div>
@@ -65,6 +115,71 @@ export default function Settings() {
       </div>
 
       <div className="settings__pane">
+        {pane === 'account' && (
+          <>
+            <h2>Apple Account</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '6px 0 16px' }}>
+              <span
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  backgroundImage: `url("${previewAvatar}")`,
+                  backgroundSize: 'cover',
+                  boxShadow: '0 4px 14px rgba(0,0,0,0.25)',
+                  flex: 'none',
+                }}
+              />
+              <div style={{ lineHeight: 1.3 }}>
+                <b style={{ fontSize: 15 }}>{draftName.trim() || displayName}</b>
+                <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{profile.email}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{profile.role}</div>
+              </div>
+            </div>
+
+            <Row title="Name" subtitle="Shown on the lock screen and across macOS.">
+              <input
+                className="setting-input"
+                style={{ width: 200 }}
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveAccount()}
+                placeholder={profile.name}
+              />
+            </Row>
+
+            <Row title="Photo URL" subtitle="Paste a link to an image, or choose a photo from your device.">
+              <input
+                className="setting-input"
+                style={{ width: 200 }}
+                value={draftAvatar}
+                onChange={(e) => setDraftAvatar(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && saveAccount()}
+                placeholder="https://…"
+              />
+            </Row>
+
+            <div className="setting-row" style={{ flexWrap: 'wrap' }}>
+              <div className="info">
+                <b>Profile photo</b>
+                <span>Upload a square photo — it is resized and cropped automatically.</span>
+              </div>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn" style={{ flex: 'none' }} onClick={() => fileRef.current?.click()}>
+                  Choose Photo…
+                </button>
+                <button className="btn" style={{ flex: 'none' }} onClick={resetAccount}>Reset</button>
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => readAvatar(e.target.files?.[0])} />
+            </div>
+
+            <div style={{ marginTop: 18, display: 'flex', gap: 8 }}>
+              <button className="btn primary" style={{ padding: '9px 22px' }} onClick={saveAccount}>Save</button>
+              <button className="btn" style={{ padding: '9px 22px' }} onClick={() => actions.openApp('about')}>About This Mac</button>
+            </div>
+          </>
+        )}
+
         {pane === 'appearance' && (
           <>
             <h2>Appearance</h2>

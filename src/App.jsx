@@ -6,6 +6,7 @@ import { ShutdownScreen, SleepScreen } from './system/PowerScreens.jsx'
 import MenuBar from './system/MenuBar.jsx'
 import Desktop from './system/Desktop.jsx'
 import Dock from './system/Dock.jsx'
+import MiniPlayer from './system/MiniPlayer.jsx'
 import Window from './system/Window.jsx'
 import ControlCenter from './system/ControlCenter.jsx'
 import NotificationCenter from './system/NotificationCenter.jsx'
@@ -244,6 +245,7 @@ export default function App() {
           ))}
       </div>
       <Dock />
+      <MiniPlayer />
 
       {s.controlCenterOpen && <ControlCenter />}
       {s.notifCenterOpen && <NotificationCenter />}

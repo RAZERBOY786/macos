@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { actions, useSystem } from './store.js'
+import { useMusic, TrackArt, fmt, toggle, next, prev, seek } from './music.jsx'
 import { profile } from '../data/profile.js'
 import { AppIcon } from '../icons/AppIcons.jsx'
 import Icon from '../icons/UIIcons.jsx'
@@ -127,6 +128,60 @@ export default function NotificationCenter() {
           </button>
         ))}
       </div>
+
+      <MusicWidget />
+    </div>
+  )
+}
+
+function MusicWidget() {
+  const mu = useMusic()
+  const t = mu.queue[mu.qIndex] || null
+  const total = t ? (t.src && mu.dur ? mu.dur : t.duration) : 0
+  return (
+    <div className="widget music-widget">
+      <div className="cc-label">Music</div>
+      {t ? (
+        <>
+          <div className="music-widget__row">
+            <TrackArt t={t} size={42} className="music-widget__art" />
+            <div className="music-widget__meta">
+              <b>{t.title}</b>
+              <span>{t.artist}</span>
+            </div>
+          </div>
+          <div className="music-widget__controls">
+            <button className="playbtn" onClick={prev} aria-label="Previous">
+              <Icon name="skipBack" size={15} />
+            </button>
+            <button className="playbtn big" onClick={toggle} aria-label={mu.playing ? 'Pause' : 'Play'}>
+              <Icon name={mu.playing ? 'pause' : 'play'} size={15} />
+            </button>
+            <button className="playbtn" onClick={next} aria-label="Next">
+              <Icon name="skipForward" size={15} />
+            </button>
+          </div>
+          <div className="progress" style={{ marginTop: 10 }}>
+            <i style={{ width: `${total ? Math.min(100, (mu.time / total) * 100) : 0}%` }} />
+            <input type="range" min="0" max={total || 0} value={mu.time} onChange={(e) => seek(+e.target.value)} />
+          </div>
+          <div className="music-widget__times">
+            <span>{fmt(mu.time)}</span>
+            <span>{fmt(total)}</span>
+          </div>
+        </>
+      ) : (
+        <div className="music-widget__empty">Nothing playing</div>
+      )}
+      <button
+        className="widget-label-btn"
+        onClick={() => {
+          actions.openApp('music')
+          actions.closeAllPanels()
+        }}
+      >
+        Open Music ›
+      </button>
     </div>
   )
 }

@@ -1355,6 +1355,22 @@
   margin: 0 0 18px;
   font-size: 18px;
 }
+.setting-input {
+  background: var(--win-tint-2, rgba(120, 120, 128, 0.12));
+  border: 0.5px solid var(--hairline);
+  border-radius: 7px;
+  padding: 7px 10px;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+}
+.setting-input::placeholder {
+  color: var(--text-3);
+}
+.setting-input:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--blue) 30%, transparent);
+}
 .setting-row {
   display: flex;
   align-items: center;

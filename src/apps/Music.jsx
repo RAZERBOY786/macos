@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { play, playTrack, next, prev, toggle, seek, setVolume, setShuffle, setRepeat, useMusic, TrackArt, fmt } from '../system/music.jsx'
 import Icon from '../icons/UIIcons.jsx'
 
 /* ------------------------------------------------------------------ *
@@ -14,9 +15,6 @@ const AUDIUS_FALLBACK = 'https://api.audius.co'
 const APP_NAME = 'MacOSPortfolio'
 const PALETTE = ['#ff2d55', '#ff9500', '#ffcc00', '#34c759', '#5ac8fa', '#007aff', '#af52de', '#ff375f']
 
-const fmt = (s) => {  if (!isFinite(s) || s < 0) s = 0
-  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
-}
 const isHttp = (u) => typeof u === 'string' && /^https?:\/\//.test(u)
 
 function hashColor(str) {
@@ -122,6 +120,7 @@ async function loadLibrary(onBatch) {
 }
 
 export default function Music() {
+  const mu = useMusic()
   const [library, setLibrary] = useState([])
   const [loading, setLoading] = useState(true)
   const [count, setCount] = useState(0)
@@ -130,17 +129,9 @@ export default function Music() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [resultsFor, setResultsFor] = useState('')
-  const [queue, setQueue] = useState([])
-  const [qIndex, setQIndex] = useState(0)
-  const [playing, setPlaying] = useState(false)
-  const [time, setTime] = useState(0)
-  const [dur, setDur] = useState(0)
-  const [volume, setVolume] = useState(0.7)
-  const [shuffle, setShuffle] = useState(false)
-  const [repeat, setRepeat] = useState(false)
-  const audioRef = useRef(null)
-  const track = queue[qIndex] || null
-  const total = track ? (track.src && dur ? dur : track.duration) : 0
+  const track = mu.queue[mu.qIndex] || null
+  const playing = mu.playing
+  const total = track ? (track.src && mu.dur ? mu.dur : track.duration) : 0
   const searching = view === 'search' && query.trim().length >= 2 && resultsFor !== query.trim()
 
   /* Load the library once (cached so re-opening is instant). */
@@ -183,98 +174,6 @@ export default function Music() {
     }
   }, [query, view])
 
-  /* Drive the <audio> element. */
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio || !track) return
-    if (isHttp(track.src)) {
-      if (audio.getAttribute('src') !== track.src) audio.src = track.src
-      audio.volume = volume
-      if (playing) audio.play().catch(() => {})
-      else audio.pause()
-    } else {
-      audio.pause()
-    }
-  }, [playing, qIndex, track, volume])
-
-  const liveRef = useRef({})
-  const playTrack = (t, list = queue) => {
-    const idx = list.findIndex((x) => x.id === t.id)
-    if (idx < 0) return
-    setQueue(list)
-    setQIndex(idx)
-    setTime(0)
-    setDur(0)
-    setPlaying(true)
-  }
-  const playList = (list, start = 0, doShuffle = false) => {
-    if (!list.length) return
-    setQueue(list)
-    setShuffle(doShuffle)
-    setQIndex(Math.min(start, list.length - 1))
-    setTime(0)
-    setDur(0)
-    setPlaying(true)
-  }
-  const next = (auto = false) => {
-    const n = queue.length
-    if (!n) return
-    let i = shuffle ? Math.floor(Math.random() * n) : (qIndex + 1) % n
-    if (i === qIndex && n > 1) i = (i + 1) % n
-    setQIndex(i)
-    setTime(0)
-    setDur(0)
-    if (auto && !repeat) setPlaying(true)
-  }
-  const prev = () => {
-    if (!queue.length) return
-    setQIndex((i) => (i - 1 + queue.length) % queue.length)
-    setTime(0)
-    setDur(0)
-  }
-  useEffect(() => {
-    liveRef.current = { next, repeat, len: queue.length }
-  })
-
-  /* Reflect real time/duration; advance on end; skip on error. */
-  useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
-    const onTime = () => setTime(audio.currentTime || 0)
-    const onLoaded = () => {
-      if (isFinite(audio.duration) && audio.duration > 0) setDur(audio.duration)
-    }
-    const onEnded = () => {
-      const live = liveRef.current
-      if (live.repeat) {
-        audio.currentTime = 0
-        audio.play().catch(() => {})
-      } else {
-        live.next(true)
-      }
-    }
-    const onError = () => {
-      const live = liveRef.current
-      if (live.len > 1) live.next(true)
-    }
-    audio.addEventListener('timeupdate', onTime)
-    audio.addEventListener('loadedmetadata', onLoaded)
-    audio.addEventListener('ended', onEnded)
-    audio.addEventListener('error', onError)
-    return () => {
-      audio.removeEventListener('timeupdate', onTime)
-      audio.removeEventListener('loadedmetadata', onLoaded)
-      audio.removeEventListener('ended', onEnded)
-      audio.removeEventListener('error', onError)
-    }
-  }, [])
-
-  const seek = (v) => {
-    const audio = audioRef.current
-    if (track?.src && audio) audio.currentTime = v
-    setTime(v)
-  }
-
   const openHome = (v) => {
     setView(v)
     setStation(null)
@@ -292,8 +191,6 @@ export default function Music() {
 
   return (
     <div className="music">
-      <audio ref={audioRef} preload="metadata" />
-
       {/* Sidebar */}
       <div className="music__side">
         <div className="music__side-group">
@@ -372,7 +269,7 @@ export default function Music() {
                 title={stationMeta?.name || 'Playlist'}
                 subtitle={`${stationTracks.length} songs`}
                 color={stationMeta?.color}
-                onPlay={() => playList(stationTracks, 0, true)}
+                onPlay={() => play(stationTracks, 0, true)}
               />
               <SongList tracks={stationTracks} current={track} playing={playing} onPlay={(t) => playTrack(t, stationTracks)} />
             </>
@@ -396,13 +293,13 @@ export default function Music() {
             </>
           ) : view === 'radio' ? (
             <>
-              <Hero title="Portfolio Radio" subtitle="Endless shuffle across the whole library" color="#af52de" onPlay={() => playList(library, Math.floor(Math.random() * library.length), true)} playLabel="Start Radio" />
+              <Hero title="Portfolio Radio" subtitle="Endless shuffle across the whole library" color="#af52de" onPlay={() => play(library, Math.floor(Math.random() * library.length), true)} playLabel="Start Radio" />
               <SectionHead title="Stations" />
               <div className="tile-grid">
                 {STATIONS.map((s) => {
                   const list = library.filter((t) => t.station === s.id)
                   return (
-                    <button key={s.id} className="tile" style={{ background: `linear-gradient(135deg, ${s.color}, rgba(0,0,0,0.42))` }} onClick={() => playList(list, Math.floor(Math.random() * list.length), true)}>
+                    <button key={s.id} className="tile" style={{ background: `linear-gradient(135deg, ${s.color}, rgba(0,0,0,0.42))` }} onClick={() => play(list, Math.floor(Math.random() * list.length), true)}>
                       <Icon name={s.icon} size={22} color="#fff" />
                       <div>
                         <b>{s.name} Radio</b>
@@ -440,7 +337,7 @@ export default function Music() {
             </>
           ) : (
             <>
-              <Hero title="Listen Now" subtitle="Your Hindi & English mix" color="#ff2d55" onPlay={() => playList(library, 0, true)} playLabel="Play" />
+              <Hero title="Listen Now" subtitle="Your Hindi & English mix" color="#ff2d55" onPlay={() => play(library, 0, true)} playLabel="Play" />
               <SectionHead title="Top Picks" />
               <CardRow tracks={topPicks} current={track} playing={playing} onPlay={(t) => playTrack(t, topPicks)} />
               <SectionHead title="Stations" />
@@ -466,7 +363,7 @@ export default function Music() {
           <div className="player__now">
             {track ? (
               <>
-                <Art t={track} size={46} className="player__art" />
+                <TrackArt t={track} size={46} className="player__art" />
                 <div style={{ lineHeight: 1.25, minWidth: 0 }}>
                   <b style={{ fontSize: 12.5, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.title}</b>
                   <span style={{ fontSize: 11, color: 'var(--text-3)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{track.artist}</span>
@@ -478,47 +375,40 @@ export default function Music() {
           </div>
 
           <div className="player__controls">
-            <button className="playbtn" onClick={() => setShuffle((s) => !s)} style={{ opacity: shuffle ? 1 : 0.5 }}>
+            <button className="playbtn" onClick={() => setShuffle(!mu.shuffle)} style={{ opacity: mu.shuffle ? 1 : 0.5 }}>
               <Icon name="shuffle" size={16} />
             </button>
             <button className="playbtn" onClick={prev}>
               <Icon name="skipBack" size={18} />
             </button>
-            <button className="playbtn big" onClick={() => setPlaying((p) => !p)} disabled={!track}>
+            <button className="playbtn big" onClick={toggle} disabled={!track}>
               <Icon name={playing ? 'pause' : 'play'} size={16} />
             </button>
-            <button className="playbtn" onClick={() => next(false)}>
+            <button className="playbtn" onClick={next}>
               <Icon name="skipForward" size={18} />
             </button>
-            <button className="playbtn" onClick={() => setRepeat((r) => !r)} style={{ opacity: repeat ? 1 : 0.5 }}>
+            <button className="playbtn" onClick={() => setRepeat(!mu.repeat)} style={{ opacity: mu.repeat ? 1 : 0.5 }}>
               <Icon name="repeat" size={16} />
             </button>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-3)', width: 34 }}>{fmt(time)}</span>
+            <span style={{ fontSize: 11, color: 'var(--text-3)', width: 34 }}>{fmt(mu.time)}</span>
             <div className="progress">
-              <i style={{ width: `${total ? Math.min(100, (time / total) * 100) : 0}%` }} />
-              <input type="range" min="0" max={total || 0} value={time} onChange={(e) => seek(+e.target.value)} />
+              <i style={{ width: `${total ? Math.min(100, (mu.time / total) * 100) : 0}%` }} />
+              <input type="range" min="0" max={total || 0} value={mu.time} onChange={(e) => seek(+e.target.value)} />
             </div>
             <span style={{ fontSize: 11, color: 'var(--text-3)', width: 34 }}>{fmt(total)}</span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: 120 }}>
-            <Icon name={volume === 0 ? 'volumeMute' : 'volume'} size={15} color="var(--text-3)" />
-            <input className="slider" type="range" min="0" max="1" step="0.01" value={volume} onChange={(e) => setVolume(+e.target.value)} />
+            <Icon name={mu.volume === 0 ? 'volumeMute' : 'volume'} size={15} color="var(--text-3)" />
+            <input className="slider" type="range" min="0" max="1" step="0.01" value={mu.volume} onChange={(e) => setVolume(+e.target.value)} />
           </div>
         </div>
       </div>
     </div>
   )
-}
-
-function Art({ t, size, className = '' }) {
-  const style = t?.art
-    ? { background: `center/cover no-repeat url(${t.art})` }
-    : { background: `linear-gradient(135deg, ${t?.color || '#888'}, rgba(0,0,0,0.35))` }
-  return <div className={className} style={{ ...style, width: size, height: size, flex: 'none' }} />
 }
 
 function Hero({ title, subtitle, color = '#ff2d55', onPlay, playLabel = 'Play' }) {
@@ -553,7 +443,7 @@ function CardRow({ tracks, current, playing, onPlay }) {
       {tracks.map((t) => (
         <div key={t.id} className="card" onDoubleClick={() => onPlay(t)} title={`${t.title} — ${t.artist}`}>
           <div className="card__art-wrap">
-            <Art t={t} className="card__art" size={148} />
+            <TrackArt t={t} className="card__art" size={148} />
             <button className="card__play" onClick={() => onPlay(t)}>
               <Icon name={playing && current?.id === t.id ? 'pause' : 'play'} size={18} color="#fff" />
             </button>
@@ -575,7 +465,7 @@ function SongList({ tracks, current, playing, onPlay }) {
         return (
           <button key={t.id} className={`song ${active ? 'active' : ''}`} onClick={() => onPlay(t)}>
             <span className="song__num">{playing && active ? <Icon name="volume" size={13} color="var(--pink)" /> : i + 1}</span>
-            <Art t={t} size={38} className="song__art" />
+            <TrackArt t={t} size={38} className="song__art" />
             <span className="song__meta">
               <b>{t.title}</b>
               <span>{t.artist}</span>

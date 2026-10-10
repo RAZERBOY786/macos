@@ -1,8 +1,11 @@
 import { actions, useSystem } from './store.js'
+import { useMusic, TrackArt, toggle, next, prev } from './music.jsx'
 import Icon from '../icons/UIIcons.jsx'
 
 export default function ControlCenter() {
   const s = useSystem()
+  const mu = useMusic()
+  const t = mu.queue[mu.qIndex] || null
   return (
     <div className="panel control-center" onMouseDown={(e) => e.stopPropagation()}>
       <div className="cc-grid">
@@ -78,22 +81,44 @@ export default function ControlCenter() {
         <div className="cc-tile wide">
           <div className="cc-label">Now Playing</div>
           <div className="slider-row">
-            <span
-              style={{
-                width: 42, height: 42, borderRadius: 6, flex: 'none',
-                background: 'linear-gradient(135deg,#af52de,#5856d6)',
-                display: 'grid', placeItems: 'center', color: '#fff',
-              }}
-            >
-              <Icon name="music" size={18} color="#fff" />
-            </span>
-            <div style={{ flex: 1 }}>
-              <b style={{ fontSize: 12.5, display: 'block' }}>Portfolio Radio</b>
-              <span style={{ fontSize: 11, color: 'var(--text-3)' }}>All my favourite tracks</span>
+            {t ? (
+              <TrackArt t={t} size={42} className="cc-art" />
+            ) : (
+              <span
+                style={{
+                  width: 42, height: 42, borderRadius: 6, flex: 'none',
+                  background: 'linear-gradient(135deg,#af52de,#5856d6)',
+                  display: 'grid', placeItems: 'center', color: '#fff',
+                }}
+              >
+                <Icon name="music" size={18} color="#fff" />
+              </span>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <b style={{ fontSize: 12.5, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {t ? t.title : 'Nothing Playing'}
+              </b>
+              <span style={{ fontSize: 11, color: 'var(--text-3)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {t ? t.artist : 'Open Music to start'}
+              </span>
             </div>
-            <button className="playbtn" onClick={() => actions.openApp('music')}>
-              <Icon name="play" size={16} />
-            </button>
+            {t ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <button className="playbtn" onClick={prev} aria-label="Previous">
+                  <Icon name="skipBack" size={15} />
+                </button>
+                <button className="playbtn" onClick={toggle} aria-label={mu.playing ? 'Pause' : 'Play'}>
+                  <Icon name={mu.playing ? 'pause' : 'play'} size={15} />
+                </button>
+                <button className="playbtn" onClick={next} aria-label="Next">
+                  <Icon name="skipForward" size={15} />
+                </button>
+              </div>
+            ) : (
+              <button className="playbtn" onClick={() => actions.openApp('music')}>
+                <Icon name="play" size={16} />
+              </button>
+            )}
           </div>
         </div>
       </div>

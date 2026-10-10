@@ -91,15 +91,20 @@ export default function Desktop() {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       setDragging(null)
-      // snap
+      const cur = pos[icon.id]
+      if (!cur) return
       setTimeout(() => {
-        setPos((p) => ({
-          ...p,
-          [icon.id]: {
-            x: Math.round(p[icon.id].x / GRID) * GRID,
-            y: Math.round(p[icon.id].y / GRID) * GRID,
-          },
-        }))
+        setPos((p) => {
+          const c = p[icon.id]
+          if (!c) return p
+          return {
+            ...p,
+            [icon.id]: {
+              x: Math.round(c.x / GRID) * GRID,
+              y: Math.round(c.y / GRID) * GRID,
+            },
+          }
+        })
       }, 0)
     }
     window.addEventListener('pointermove', move)
