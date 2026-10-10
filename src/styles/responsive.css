@@ -1,0 +1,552 @@
+/* ===========================================================================
+   Responsive layer
+   ---------------------------------------------------------------------------
+   Loaded last so it can adapt & override the base component styles. Two
+   techniques are used:
+     • container queries  → app content reacts to the *window* it lives in
+                            (works even on a big monitor with a small window)
+     • media queries      → chrome that lives at the viewport level (menu bar,
+                            dock, panels, launchpad, lock screen, iOS home)
+   =========================================================================== */
+
+/* --- Root safety ---------------------------------------------------------- */
+html,
+body,
+#root,
+.app-root {
+  width: 100%;
+  height: 100%;
+}
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root,
+  .app-root {
+    height: 100dvh;
+  }
+}
+body {
+  overscroll-behavior: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+img,
+svg,
+video {
+  max-width: 100%;
+}
+
+/* Window bodies become query containers so apps adapt to their window width. */
+.window__body {
+  container-type: inline-size;
+  container-name: winbody;
+}
+
+/* ===========================================================================
+   App content — responsive to the containing window
+   =========================================================================== */
+
+/* --- medium windows ------------------------------------------------------- */
+@container winbody (max-width: 780px) {
+  .sidebar,
+  .settings__side {
+    width: 150px;
+  }
+  .notes-list {
+    width: 210px;
+  }
+  .mail-list {
+    width: 220px;
+  }
+  .music__side {
+    width: 156px;
+  }
+  .music__body {
+    padding: 18px;
+  }
+  .store-grid {
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    padding: 14px;
+    gap: 12px;
+  }
+  .photo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+  .music__search {
+    width: 190px;
+  }
+  .weather__side {
+    width: 180px;
+  }
+}
+
+/* --- narrow windows ------------------------------------------------------- */
+@container winbody (max-width: 580px) {
+  .sidebar,
+  .settings__side {
+    width: 116px;
+  }
+  .notes-list {
+    width: 168px;
+  }
+  .mail-list {
+    width: 170px;
+  }
+  .music__side {
+    width: 112px;
+  }
+  .music__body {
+    padding: 14px;
+  }
+  .music__side-group > .label,
+  .sidebar__section,
+  .settings__group {
+    padding-left: 4px;
+  }
+  .music__search {
+    width: 140px;
+  }
+  .album-grid {
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 12px;
+  }
+  .store-grid {
+    grid-template-columns: 1fr;
+  }
+  .photo-viewer__nav.prev {
+    left: 8px;
+  }
+  .photo-viewer__nav.next {
+    right: 8px;
+  }
+  .photo-viewer__nav {
+    width: 38px;
+    height: 38px;
+  }
+  .weather__side {
+    display: none;
+  }
+}
+
+/* --- very narrow windows (phone width / iOS windows) ---------------------- */
+@container winbody (max-width: 430px) {
+  .sidebar,
+  .settings__side {
+    width: 92px;
+  }
+  .notes-list {
+    width: 132px;
+  }
+  .mail-list {
+    width: 138px;
+  }
+  .music__side {
+    width: 84px;
+  }
+  .music__search,
+  .player__now {
+    display: none !important;
+  }
+  .player {
+    gap: 10px;
+    padding: 0 10px;
+    height: 64px;
+  }
+  .finder-list th,
+  .finder-list td {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  .app-scroll {
+    padding: 12px !important;
+  }
+  .calendar {
+    padding: 10px 12px;
+  }
+  .calendar__title {
+    font-size: 20px;
+  }
+  .reminders {
+    padding: 14px;
+  }
+  .weather__grid {
+    grid-template-columns: 1fr;
+  }
+  .weather__scroll {
+    padding: 16px 16px 22px;
+  }
+  .weather__head-temp {
+    font-size: 64px;
+  }
+}
+
+/* Sidebars can't realistically hold text below this — keep them usable. */
+@container winbody (max-width: 340px) {
+  .sidebar,
+  .settings__side,
+  .music__side,
+  .notes-list,
+  .mail-list {
+    display: none;
+  }
+}
+
+/* ===========================================================================
+   Menu bar
+   =========================================================================== */
+@media (max-width: 1180px) {
+  .menubar {
+    font-size: 12.5px;
+  }
+  .menubar__item {
+    padding: 0 7px;
+  }
+}
+@media (max-width: 900px) {
+  .menubar {
+    font-size: 12px;
+    padding: 0 6px;
+  }
+  .menubar__item {
+    padding: 0 5px;
+    gap: 0;
+  }
+  .menubar__clock {
+    letter-spacing: 0;
+  }
+}
+
+/* ===========================================================================
+   Dock
+   =========================================================================== */
+@media (max-width: 1240px) {
+  .dock {
+    gap: 5px;
+    padding: 7px 9px;
+  }
+  .dock__item,
+  .dock__item img,
+  .dock__item .dock__icon {
+    width: 46px;
+    height: 46px;
+  }
+  .dock__sep {
+    height: 38px;
+    margin: 4px 4px;
+  }
+}
+@media (max-width: 1000px) {
+  .dock {
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: calc(100vw - 12px);
+    row-gap: 4px;
+  }
+  .dock__item,
+  .dock__item img,
+  .dock__item .dock__icon {
+    width: 40px;
+    height: 40px;
+  }
+  .dock__dot {
+    bottom: -3px;
+  }
+}
+
+/* ===========================================================================
+   Panels (Control Center / Notification Center / Toasts)
+   =========================================================================== */
+.control-center {
+  width: min(320px, calc(100vw - 16px));
+}
+.notif-center {
+  width: min(346px, calc(100vw - 16px));
+  max-height: calc(100dvh - 60px);
+}
+.toast-layer {
+  width: min(344px, calc(100vw - 20px));
+}
+@media (max-width: 420px) {
+  .cc-grid {
+    gap: 8px;
+  }
+  .panel {
+    padding: 10px;
+    border-radius: 14px;
+  }
+}
+
+/* ===========================================================================
+   Spotlight
+   =========================================================================== */
+@media (max-width: 640px) {
+  .spotlight-backdrop {
+    padding-top: 10vh;
+  }
+  .spotlight__input-row {
+    padding: 11px 14px;
+  }
+  .spotlight__input-row input {
+    font-size: 18px;
+  }
+  .spotlight__results {
+    max-height: 46vh;
+  }
+}
+
+/* ===========================================================================
+   Launchpad
+   =========================================================================== */
+@media (max-width: 1000px) {
+  .launchpad {
+    padding: 52px 5vw 56px;
+  }
+  .launchpad__grid {
+    margin-top: 30px;
+    gap: 8px 0;
+    grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+  }
+  .lp-app__icon {
+    width: 70px;
+    height: 70px;
+  }
+}
+@media (max-width: 560px) {
+  .launchpad {
+    padding: 40px 4vw 44px;
+  }
+  .launchpad__search {
+    width: min(260px, 72vw);
+  }
+  .launchpad__grid {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  }
+  .lp-app__icon {
+    width: 58px;
+    height: 58px;
+  }
+  .lp-app {
+    padding: 8px;
+    gap: 6px;
+  }
+  .lp-app__label {
+    font-size: 11px;
+  }
+}
+
+/* ===========================================================================
+   Mission Control & App Switcher
+   =========================================================================== */
+@media (max-width: 900px) {
+  .mission {
+    padding: 54px 14px 120px;
+  }
+  .mission__card {
+    width: min(340px, 88vw);
+  }
+  .mission__card .mission__thumb {
+    height: 160px;
+  }
+}
+@media (max-width: 560px) {
+  .switcher {
+    gap: 8px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+  .switcher__item {
+    width: 62px;
+    height: 62px;
+    border-radius: 13px;
+  }
+}
+
+/* ===========================================================================
+   Dialogs / context menus — never exceed the viewport
+   =========================================================================== */
+.dialog {
+  width: min(300px, calc(100vw - 32px));
+}
+.ctx,
+.menu {
+  max-width: calc(100vw - 16px);
+}
+@media (max-width: 900px) {
+  .menu__sub {
+    left: auto;
+    right: 100%;
+    margin-left: 0;
+    margin-right: 2px;
+  }
+}
+
+/* ===========================================================================
+   Lock / login screen
+   =========================================================================== */
+@media (max-width: 680px) {
+  .lock__clock {
+    top: 9%;
+  }
+  .lock__date {
+    font-size: 17px;
+  }
+  .lock__time {
+    font-size: 72px;
+    letter-spacing: -3px;
+  }
+  .lock__avatar {
+    width: 96px;
+    height: 96px;
+  }
+  .lock__field {
+    width: min(270px, 82vw);
+  }
+  .lock__bottom {
+    gap: 30px;
+    bottom: 30px;
+  }
+}
+@media (max-width: 400px) {
+  .lock__time {
+    font-size: 58px;
+  }
+  .lock__name {
+    font-size: 17px;
+  }
+}
+
+/* Boot screen */
+@media (max-width: 480px) {
+  .boot__logo {
+    transform: scale(0.78);
+    margin-bottom: 34px;
+  }
+  .boot__bar {
+    width: 170px;
+  }
+}
+
+/* ===========================================================================
+   Windows — accommodate very small viewports
+   =========================================================================== */
+@media (max-width: 360px) {
+  .window {
+    min-width: 0;
+  }
+}
+
+/* ===========================================================================
+   iOS home screen (phones & tablets)
+   =========================================================================== */
+.ios {
+  padding-top: calc(60px + env(safe-area-inset-top, 0px));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom, 0px));
+  padding-left: calc(22px + env(safe-area-inset-left, 0px));
+  padding-right: calc(22px + env(safe-area-inset-right, 0px));
+}
+.ios-window__bar {
+  height: calc(50px + env(safe-area-inset-top, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* Phones */
+@media (max-width: 480px) {
+  .ios {
+    padding-top: calc(46px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px));
+    padding-left: calc(16px + env(safe-area-inset-left, 0px));
+    padding-right: calc(16px + env(safe-area-inset-right, 0px));
+  }
+  .ios__clock {
+    margin-bottom: 22px;
+  }
+  .ios__clock .time {
+    font-size: 52px;
+  }
+  .ios__clock .date {
+    font-size: 14px;
+  }
+  .ios__grid {
+    gap: 18px 0;
+  }
+  .ios__app__icon {
+    width: 58px;
+    height: 58px;
+  }
+}
+@media (max-width: 360px) {
+  .ios__clock .time {
+    font-size: 44px;
+  }
+  .ios__app__icon {
+    width: 52px;
+    height: 52px;
+  }
+  .ios__app span {
+    font-size: 10.5px;
+  }
+}
+
+/* Tablets & large touch screens — roomier grid */
+@media (min-width: 640px) and (pointer: coarse) {
+  .ios {
+    padding-top: calc(88px + env(safe-area-inset-top, 0px));
+    padding-left: calc(44px + env(safe-area-inset-left, 0px));
+    padding-right: calc(44px + env(safe-area-inset-right, 0px));
+  }
+  .ios__clock {
+    margin-bottom: 40px;
+  }
+  .ios__clock .time {
+    font-size: 88px;
+  }
+  .ios__grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 30px 0;
+  }
+  .ios__app__icon {
+    width: 78px;
+    height: 78px;
+  }
+  .ios__app span {
+    font-size: 12.5px;
+  }
+}
+
+/* Landscape on phones — compress vertical rhythm */
+@media (max-height: 520px) and (orientation: landscape) {
+  .ios {
+    padding-top: calc(24px + env(safe-area-inset-top, 0px));
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+  .ios__clock {
+    margin-bottom: 12px;
+  }
+  .ios__clock .time {
+    font-size: 38px;
+  }
+  .ios__clock .date {
+    font-size: 12px;
+  }
+  .ios__grid {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 12px 0;
+  }
+  .ios__app__icon {
+    width: 50px;
+    height: 50px;
+  }
+  .ios__app span {
+    font-size: 10px;
+  }
+}
+
+/* Short desktop viewports — keep the dock out of the way */
+@media (max-height: 620px) {
+  .dock-wrap {
+    bottom: 4px;
+  }
+  .dock__tooltip {
+    display: none;
+  }
+}

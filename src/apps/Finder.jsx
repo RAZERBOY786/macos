@@ -1,6 +1,8 @@
-import { useState } from 'react'
-import { fileSystem, findNode, pathTo } from '../data/fs.js'
-import { actions } from '../system/store.js'
+import { useEffect, useState } from 'react'
+import { fileSystem, findNode, pathTo, findNodesByTag, desktopIcons } from '../data/fs.js'
+import { appsMeta } from '../data/appsMeta.js'
+import { profile } from '../data/profile.js'
+import { actions, useSystem } from '../system/store.js'
 import sound from '../system/sound.js'
 import Icon from '../icons/UIIcons.jsx'
 import { Icons } from '../icons/AppIcons.jsx'
@@ -35,91 +37,237 @@ function NodeIcon({ node, size = 46 }) {
   return wrap(Icons.generic)
 }
 
+const KIND_LABEL = {
+  app: 'Application',
+  folder: 'Folder',
+  drive: 'Volume',
+  project: 'Folder',
+  pdf: 'PDF Document',
+  image: 'Image',
+  file: 'Document',
+}
+const kindLabel = (type) => KIND_LABEL[type] || type
+
+function snapshot(node) {
+  return {
+    id: node.id,
+    name: node.name,
+    type: node.type,
+    appId: node.appId,
+    detail: node.detail,
+    color: node.color,
+    link: node.project?.link || node.link,
+  }
+}
+
+/* Locations: real FS nodes, or "smart" virtual folders (recents, tags, …) */
+function parseLoc(v) {
+  return v?.startsWith('smart:')
+    ? { type: 'smart', kind: v.slice(6) }
+    : { type: 'node', id: v || 'macintosh-hd' }
+}
+
 export default function Finder({ win }) {
-  const initial = (win?.props?.location && findNode(fileSystem, win.props.location)) || fileSystem
-  const [stack, setStack] = useState([initial])
+  const s = useSystem()
+  const [loc, setLoc] = useState(() => parseLoc(win?.props?.location))
+  const [back, setBack] = useState([])
+  const [fwd, setFwd] = useState([])
   const [view, setView] = useState('icon')
   const [query, setQuery] = useState('')
   const [selected, setSelected] = useState(null)
   const [getInfo, setGetInfo] = useState(null)
 
-  const current = stack[stack.length - 1]
-  const rawChildren = current.children || []
-  const children = query.trim()
-    ? rawChildren.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()))
-    : rawChildren
+  const appChildren = Object.values(appsMeta)
+    .filter((m) => m.id !== 'launchpad')
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((m) => ({ id: 'app-' + m.id, name: m.name, type: 'app', appId: m.id }))
 
-  const open = (node) => {
-    if (node.type === 'folder' || node.type === 'drive' || node.type === 'project') {
-      if (node.type === 'project') return setGetInfo(node)
-      sound.click()
-      setStack((s) => [...s, node])
-      setSelected(null)
-    } else if (node.type === 'pdf') {
-      actions.openApp('preview', { props: { nodeId: node.id } })
-    } else if (node.type === 'app') {
-      actions.openApp(node.appId)
-    } else if (node.type === 'image') {
-      actions.openApp('photos')
-    } else {
-      setGetInfo(node)
-    }
+  const desktopChildren = [
+    ...desktopIcons.map((d) => {
+      if (d.kind === 'hd') return { id: 'macintosh-hd', name: d.name, type: 'drive' }
+      if (d.kind === 'pdf') return { id: 'resume', name: d.name, type: 'pdf', detail: 'Portfolio résumé' }
+      if (d.kind === 'trash') return { id: 'trash', name: d.name, type: 'folder' }
+      return { id: 'projects', name: d.name, type: 'folder' }
+    }),
+    ...s.desktopFolders.map((f) => ({ id: 'f-' + f, name: f, type: 'folder', children: [] })),
+  ]
+
+  const smartFolders = {
+    recents: { id: 'smart-recents', name: 'Recents', children: s.recentItems },
+    applications: { id: 'smart-applications', name: 'Applications', children: appChildren },
+    desktop: { id: 'smart-desktop', name: 'Desktop', children: desktopChildren },
+    icloud: {
+      id: 'smart-icloud',
+      name: 'iCloud Drive',
+      children: ['projects', 'documents', 'photos']
+        .map((id) => findNode(fileSystem, id))
+        .filter(Boolean),
+    },
+    network: {
+      id: 'smart-network',
+      name: 'Network',
+      children: [
+        {
+          id: 'net-mac',
+          name: `${profile.firstName}’s MacBook Pro`,
+          type: 'folder',
+          children: [findNode(fileSystem, 'me')].filter(Boolean),
+        },
+      ],
+    },
   }
 
-  const back = () => stack.length > 1 && setStack((s) => s.slice(0, -1))
-  const forward = () => {}
+  const resolve = (l) => {
+    if (!l) return fileSystem
+    if (l.type === 'smart') {
+      const tag = l.kind.startsWith('tags/') ? l.kind.slice(5) : null
+      if (tag) {
+        return { id: 'smart-tag-' + tag, name: tag, children: findNodesByTag(fileSystem, tag) }
+      }
+      return smartFolders[l.kind] || { id: 'smart-' + l.kind, name: l.kind, children: [] }
+    }
+    return l.node || findNode(fileSystem, l.id) || fileSystem
+  }
 
-  const crumb = pathTo(fileSystem, current.id).map((n) => n.name)
+  const current = resolve(loc)
+  const rawChildren = current.children || []
+  const children = query.trim()
+    ? rawChildren.filter((c) => c.name?.toLowerCase().includes(query.toLowerCase()))
+    : rawChildren
+
+  const navigate = (next) => {
+    setBack((b) => [...b, loc])
+    setFwd([])
+    setLoc(next)
+    setSelected(null)
+    setQuery('')
+  }
+
+  const goBack = () => {
+    if (!back.length) return
+    setFwd((f) => [...f, loc])
+    setLoc(back[back.length - 1])
+    setBack((b) => b.slice(0, -1))
+  }
+  const goForward = () => {
+    if (!fwd.length) return
+    setBack((b) => [...b, loc])
+    setLoc(fwd[fwd.length - 1])
+    setFwd((f) => f.slice(0, -1))
+  }
+
+  const activeLoc = (l) =>
+    l.type === 'smart'
+      ? loc?.type === 'smart' && loc.kind === l.kind
+      : loc?.type === 'node' && loc.id === l.id
+
+  useEffect(() => {
+    const target = win?.props?.location
+    if (!target) return
+    const next = parseLoc(target)
+    const key = next.type === 'smart' ? 'smart:' + next.kind : next.id
+    const cur = loc.type === 'smart' ? 'smart:' + loc.kind : loc.id
+    if (key === cur) return
+    navigate(next)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [win?.props?.location])
+
+  const open = (node) => {
+    actions.addRecent(snapshot(node))
+    if (node.type === 'project') {
+      const link = node.project?.link || node.link
+      if (link) return actions.openApp('safari', { props: { url: link } })
+      return setGetInfo(node)
+    }
+    if (node.type === 'folder' || node.type === 'drive') {
+      if (node.id === 'trash') return actions.openApp('trash')
+      sound.click()
+      const real = findNode(fileSystem, node.id)
+      navigate(real ? { type: 'node', id: node.id } : { type: 'node', id: node.id, node })
+      return
+    }
+    if (node.type === 'pdf') {
+      return actions.openApp('preview', { props: { nodeId: node.id } })
+    }
+    if (node.type === 'app') return actions.openApp(node.appId)
+    if (node.type === 'image') return actions.openApp('photos')
+    setGetInfo(node)
+  }
+
+  const crumb = pathTo(fileSystem, current.id).length
+    ? pathTo(fileSystem, current.id).map((n) => n.name)
+    : [current.name]
+
+  const favorites = [
+    { label: 'AirDrop', icon: 'bolt', kind: 'airdrop' },
+    { label: 'Recents', icon: 'clock', kind: 'recents' },
+    { label: 'Applications', icon: 'applications', kind: 'applications' },
+    { label: 'Desktop', icon: 'desktop', kind: 'desktop' },
+    { label: 'Documents', icon: 'file', id: 'documents' },
+    { label: 'Downloads', icon: 'download', id: 'downloads' },
+  ]
+
+  const locationsSide = [
+    { label: 'Macintosh HD', icon: 'desktop', id: 'macintosh-hd' },
+    { label: 'Network', icon: 'globe', kind: 'network' },
+  ]
 
   return (
     <div className="app" style={{ position: 'relative' }}>
       <div className="sidebar">
         <div className="sidebar__section">Favorites</div>
-        {[
-          ['AirDrop', 'bolt'],
-          ['Recents', 'clock'],
-          ['Applications', 'applications'],
-          ['Desktop', 'desktop'],
-          ['Documents', 'file'],
-          ['Downloads', 'download'],
-        ].map(([n, ic]) => (
-          <div key={n} className="sidebar__item">
-            <span className="ic">
-              <Icon name={ic} size={15} />
-            </span>
-            {n}
-          </div>
-        ))}
+        {favorites.map((item) => {
+          const l = item.kind ? { type: 'smart', kind: item.kind } : { type: 'node', id: item.id }
+          return (
+            <div
+              key={item.label}
+              className={`sidebar__item ${activeLoc(l) ? 'active' : ''}`}
+              onClick={() => navigate(l)}
+            >
+              <span className="ic">
+                <Icon name={item.icon} size={15} />
+              </span>
+              {item.label}
+            </div>
+          )
+        })}
         <div className="sidebar__section">iCloud</div>
-        <div className="sidebar__item">
+        <div
+          className={`sidebar__item ${activeLoc({ type: 'smart', kind: 'icloud' }) ? 'active' : ''}`}
+          onClick={() => navigate({ type: 'smart', kind: 'icloud' })}
+        >
           <span className="ic">
             <Icon name="cloud" size={15} />
           </span>
           iCloud Drive
         </div>
         <div className="sidebar__section">Locations</div>
-        <div
-          className={`sidebar__item ${current.id === 'macintosh-hd' ? 'active' : ''}`}
-          onClick={() => setStack([fileSystem])}
-        >
-          <span className="ic">
-            <Icon name="desktop" size={15} />
-          </span>
-          Macintosh HD
-        </div>
-        <div className="sidebar__item">
-          <span className="ic">
-            <Icon name="globe" size={15} />
-          </span>
-          Network
-        </div>
+        {locationsSide.map((item) => {
+          const l = item.kind ? { type: 'smart', kind: item.kind } : { type: 'node', id: item.id }
+          return (
+            <div
+              key={item.label}
+              className={`sidebar__item ${activeLoc(l) ? 'active' : ''}`}
+              onClick={() => navigate(l)}
+            >
+              <span className="ic">
+                <Icon name={item.icon} size={15} />
+              </span>
+              {item.label}
+            </div>
+          )
+        })}
         <div className="sidebar__section">Tags</div>
         {[
           ['Work', '#ff9500'],
           ['Personal', '#34c759'],
           ['Important', '#ff3b30'],
         ].map(([n, c]) => (
-          <div key={n} className="sidebar__item">
+          <div
+            key={n}
+            className={`sidebar__item ${activeLoc({ type: 'smart', kind: 'tags/' + n }) ? 'active' : ''}`}
+            onClick={() => navigate({ type: 'smart', kind: 'tags/' + n })}
+          >
             <span className="ic" style={{ color: c }}>
               <Icon name="tag" size={15} />
             </span>
@@ -130,10 +278,10 @@ export default function Finder({ win }) {
 
       <div className="app-main">
         <div className="toolbar">
-          <button className="iconbtn" onClick={back} disabled={stack.length < 2} style={{ opacity: stack.length < 2 ? 0.35 : 1 }}>
+          <button className="iconbtn" onClick={goBack} disabled={!back.length} style={{ opacity: back.length ? 1 : 0.35 }}>
             <Icon name="chevronLeft" />
           </button>
-          <button className="iconbtn" onClick={forward} style={{ opacity: 0.35 }}>
+          <button className="iconbtn" onClick={goForward} disabled={!fwd.length} style={{ opacity: fwd.length ? 1 : 0.35 }}>
             <Icon name="chevronRight" />
           </button>
           <span style={{ fontWeight: 600, fontSize: 13, marginLeft: 4 }}>{current.name}</span>
@@ -197,7 +345,7 @@ export default function Finder({ win }) {
                       <NodeIcon node={node} size={18} />
                       {node.name}
                     </td>
-                    <td style={{ color: 'var(--text-3)' }}>{node.type}</td>
+                    <td style={{ color: 'var(--text-3)' }}>{kindLabel(node.type)}</td>
                     <td style={{ color: 'var(--text-3)' }}>{(node.name.length * 12) % 4096 + ' KB'}</td>
                     <td style={{ color: 'var(--text-3)' }}>Today, 11:32 AM</td>
                   </tr>
@@ -262,16 +410,16 @@ export default function Finder({ win }) {
             <NodeIcon node={getInfo} size={64} />
           </div>
           <div className="getinfo">
-            <p><span>Kind</span><span>{getInfo.type}</span></p>
+            <p><span>Kind</span><span>{kindLabel(getInfo.type)}</span></p>
             <p><span>Size</span><span>{getInfo.name.length * 24} KB</span></p>
             <p><span>Created</span><span>2024</span></p>
-            <p><span>Owner</span><span>{getInfo.type}</span></p>
+            <p><span>Owner</span><span>{kindLabel(getInfo.type)}</span></p>
           </div>
-          {getInfo.project && (
+          {(getInfo.project?.link || getInfo.link) && (
             <button
               className="btn primary"
               style={{ width: '100%', marginTop: 8 }}
-              onClick={() => actions.openApp('safari', { props: { url: getInfo.project.link } })}
+              onClick={() => actions.openApp('safari', { props: { url: getInfo.project?.link || getInfo.link } })}
             >
               Open Link
             </button>

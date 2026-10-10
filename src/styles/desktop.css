@@ -12,16 +12,12 @@
 }
 .desktop__icons {
   position: absolute;
-  inset: 14px 12px auto auto;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: wrap;
-  gap: 4px;
-  align-content: flex-start;
-  max-height: calc(100% - 120px);
+  inset: 0;
   z-index: 1;
+  pointer-events: none;
 }
 .desk-icon {
+  pointer-events: auto;
   width: 92px;
   padding: 8px 4px 4px;
   border-radius: 6px;
@@ -31,12 +27,18 @@
   gap: 4px;
   text-align: center;
   transition: background 0.12s var(--ease);
+  animation: fadeOnly 0.55s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 26ms);
+}
+.desk-icon:active .desk-icon__img {
+  transform: scale(0.9);
 }
 .desk-icon__img {
   width: 58px;
   height: 58px;
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
   pointer-events: none;
+  transition: transform 0.16s var(--spring);
 }
 .desk-icon__label {
   font-size: 12px;
@@ -90,6 +92,7 @@
   backdrop-filter: blur(30px) saturate(180%);
   -webkit-backdrop-filter: blur(30px) saturate(180%);
   box-shadow: inset 0 -0.5px 0 var(--hairline);
+  animation: menubarIn 0.5s var(--ease-out) both;
 }
 .menubar__item {
   height: 20px;
@@ -98,6 +101,7 @@
   padding: 0 9px;
   border-radius: 5px;
   white-space: nowrap;
+  transition: background-color 0.16s var(--ease), color 0.16s var(--ease);
 }
 .menubar__item:hover,
 .menubar__item.open {
@@ -141,14 +145,18 @@
   font-size: 13.5px;
   color: var(--text);
   z-index: 5200;
-  animation: menuIn 0.12s var(--ease-out);
+  animation: menuIn 0.18s var(--spring);
 }
 @keyframes menuIn {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(-4px) scale(0.99);
+    transform: translateY(-6px) scale(0.96);
   }
-  to {
+  60% {
+    opacity: 1;
+    transform: translateY(1px) scale(1.005);
+  }
+  100% {
     opacity: 1;
     transform: none;
   }
@@ -209,6 +217,7 @@
   justify-content: center;
   z-index: 4000;
   pointer-events: none;
+  animation: dockIn 0.55s var(--ease-out) both;
 }
 .dock {
   pointer-events: auto;
@@ -235,11 +244,16 @@
   transition: transform 0.14s var(--ease-out);
 }
 .dock__item img,
-.dock__item .dock__icon {
+.dock__item .dock__icon,
+.dock__item > svg {
   width: 52px;
   height: 52px;
   display: block;
-  transition: transform 0.14s var(--ease-out);
+  transition: transform 0.18s var(--spring);
+}
+.dock__item:active > svg,
+.dock__item:active img {
+  transform: scale(0.85);
 }
 .dock__item.bounce {
   animation: dockBounce 0.6s var(--ease) 1;
@@ -311,14 +325,18 @@
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   box-shadow: var(--shadow-menu);
   padding: 12px;
-  animation: panelIn 0.2s var(--ease-out);
+  animation: panelIn 0.24s var(--spring);
 }
 @keyframes panelIn {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(-8px) scale(0.98);
+    transform: translateY(-10px) scale(0.96);
   }
-  to {
+  60% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.005);
+  }
+  100% {
     opacity: 1;
     transform: none;
   }
@@ -338,6 +356,10 @@
   border-radius: 12px;
   padding: 12px;
   box-shadow: inset 0 0 0 0.5px var(--hairline-2);
+  transition: transform 0.16s var(--spring);
+}
+.cc-tile:active {
+  transform: scale(0.97);
 }
 .cc-tile.wide {
   grid-column: span 2;
@@ -471,7 +493,8 @@
   border-radius: 14px;
   padding: 12px 14px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22), inset 0 0 0 0.5px var(--hairline-2);
-  animation: notifIn 0.4s var(--ease-out);
+  animation: notifIn 0.42s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 70ms);
   display: flex;
   gap: 10px;
 }
@@ -497,6 +520,56 @@
   margin: 2px 0 0;
   font-size: 12.5px;
   color: var(--text-2);
+}
+.weather-widget {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+.weather-widget:hover {
+  background: rgba(120, 120, 128, 0.12);
+}
+.note-quick {
+  display: block;
+  width: 200px;
+  margin: 0 auto 10px;
+  text-align: left;
+  background: var(--yellow);
+  border-radius: 8px;
+  padding: 10px;
+  color: #4a3300;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+}
+.note-quick b {
+  display: block;
+  font-size: 12.5px;
+}
+.note-quick span {
+  display: block;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
+}
+.link-btn {
+  font-size: 12px;
+  color: var(--blue);
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.notif-row {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border: none;
+  font: inherit;
+  color: inherit;
+}
+.notif-row:hover {
+  filter: brightness(0.97);
 }
 
 /* Toast banners */
@@ -558,14 +631,18 @@
   -webkit-backdrop-filter: blur(50px) saturate(180%);
   box-shadow: var(--shadow-menu);
   overflow: hidden;
-  animation: spotlightIn 0.2s var(--ease-out);
+  animation: spotlightIn 0.26s var(--spring);
 }
 @keyframes spotlightIn {
-  from {
+  0% {
     opacity: 0;
-    transform: translateY(-10px) scale(0.98);
+    transform: translateY(-12px) scale(0.97);
   }
-  to {
+  60% {
+    opacity: 1;
+    transform: translateY(2px) scale(1.005);
+  }
+  100% {
     opacity: 1;
     transform: none;
   }
@@ -636,11 +713,25 @@
   background: rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(40px) saturate(160%);
   -webkit-backdrop-filter: blur(40px) saturate(160%);
-  animation: fadeIn 0.25s var(--ease);
+  animation: launchpadIn 0.4s var(--ease-out) both;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 60px 8vw;
+}
+@keyframes launchpadIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.94) translateY(16px);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.008);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
 }
 .launchpad__search {
   width: 260px;
@@ -654,6 +745,8 @@
   background: rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(20px);
   box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.4);
+  animation: riseFadeOnly 0.4s var(--ease-out) both;
+  animation-delay: 0.08s;
 }
 .launchpad__search::placeholder {
   color: rgba(255, 255, 255, 0.85);
@@ -673,6 +766,8 @@
   align-items: center;
   gap: 10px;
   padding: 12px;
+  animation: popIn 0.34s var(--spring) both;
+  animation-delay: calc(var(--i, 0) * 22ms);
 }
 .lp-app__icon {
   width: 84px;

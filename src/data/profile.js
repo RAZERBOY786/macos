@@ -195,16 +195,6 @@ export const profile = {
     },
   ],
 
-  // ----- Music (public/audio paths; swap for your own tracks) ----------
-  tracks: [
-    { id: 1, title: 'Ambient Waves', artist: 'Free Music Archive', src: '', duration: 214, color: '#5ac8fa' },
-    { id: 2, title: 'Lo-Fi Sunrise', artist: 'Free Music Archive', src: '', duration: 187, color: '#ff9500' },
-    { id: 3, title: 'Neon Drive', artist: 'Free Music Archive', src: '', duration: 242, color: '#af52de' },
-    { id: 4, title: 'Rainy Window', artist: 'Free Music Archive', src: '', duration: 165, color: '#34c759' },
-    { id: 5, title: 'Midnight City', artist: 'Free Music Archive', src: '', duration: 231, color: '#ff2d55' },
-    { id: 6, title: 'Golden Hour', artist: 'Free Music Archive', src: '', duration: 199, color: '#ffcc00' },
-  ],
-
   // ----- System (About This Mac) ---------------------------------------
   system: {
     model: 'MacBook Pro',

@@ -12,40 +12,62 @@
   box-shadow: var(--shadow-window);
   overflow: hidden;
   color: var(--text);
-  animation: winOpen 0.28s var(--ease-out);
+  animation: winOpen 0.38s var(--ease-out);
   will-change: transform, opacity;
-  transition: left 0.32s var(--ease-out), top 0.32s var(--ease-out),
-    width 0.32s var(--ease-out), height 0.32s var(--ease-out);
+  transition: left 0.36s var(--ease-out), top 0.36s var(--ease-out),
+    width 0.36s var(--ease-out), height 0.36s var(--ease-out),
+    box-shadow 0.32s var(--ease);
 }
 .window.dragging {
   transition: none;
 }
 @keyframes winOpen {
-  from {
+  0% {
     opacity: 0;
-    transform: scale(0.94) translateY(14px);
+    transform: scale(0.85) translateY(18px);
   }
-  to {
+  60% {
+    opacity: 1;
+    transform: scale(1.012) translateY(-2px);
+  }
+  100% {
     opacity: 1;
     transform: none;
   }
 }
+.window__body > * {
+  animation: contentFade 0.5s var(--ease-out) both;
+}
+@keyframes contentFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
 .window.closing {
-  animation: winClose 0.2s var(--ease) forwards;
+  animation: winClose 0.22s var(--ease) forwards;
 }
 @keyframes winClose {
   to {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.9) translateY(10px);
   }
 }
 .window.minimizing {
-  animation: winMin 0.32s var(--ease) forwards;
+  animation: winMin 0.4s var(--ease-in-out) forwards;
 }
 @keyframes winMin {
+  0% {
+    transform: none;
+  }
+  50% {
+    transform: scale(0.55) translateY(34vh);
+  }
   to {
     opacity: 0;
-    transform: scale(0.2) translateY(60vh);
+    transform: scale(0.18) translateY(86vh);
   }
 }
 .window.inactive {
@@ -77,6 +99,10 @@
   display: grid;
   place-items: center;
   flex: none;
+  transition: transform 0.12s var(--ease);
+}
+.traffic:active {
+  transform: scale(0.82);
 }
 .traffic.red {
   background: var(--red);
@@ -204,6 +230,8 @@
   background: var(--window-bg);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   transition: transform 0.18s var(--ease);
+  animation: riseIn 0.42s var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
 }
 .mission__card:hover {
   transform: translateY(-6px) scale(1.02);
@@ -239,6 +267,7 @@
   backdrop-filter: blur(40px) saturate(180%);
   -webkit-backdrop-filter: blur(40px) saturate(180%);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: popIn 0.28s var(--spring);
 }
 .switcher__item {
   width: 84px;

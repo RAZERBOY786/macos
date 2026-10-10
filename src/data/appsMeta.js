@@ -19,7 +19,7 @@ export const appsMeta = {
   music: { id: 'music', name: 'Music', w: 900, h: 600, color: '#fc3c44' },
   appstore: { id: 'appstore', name: 'App Store', w: 860, h: 580, color: '#1a8cff' },
   terminal: { id: 'terminal', name: 'Terminal', w: 660, h: 440, color: '#1c1c1e' },
-  calculator: { id: 'calculator', name: 'Calculator', w: 254, h: 400, color: '#5f5f63' },
+  calculator: { id: 'calculator', name: 'Calculator', w: 264, h: 440, color: '#5f5f63' },
   settings: { id: 'settings', name: 'System Settings', w: 840, h: 580, color: '#8e8e93' },
   weather: { id: 'weather', name: 'Weather', w: 700, h: 540, color: '#4a90d9' },
   clock: { id: 'clock', name: 'Clock', w: 640, h: 520, color: '#161618' },

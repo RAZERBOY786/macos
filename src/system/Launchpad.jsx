@@ -34,8 +34,8 @@ export default function Launchpad() {
         autoFocus
       />
       <div className="launchpad__grid">
-        {pageItems.map((a) => (
-          <div key={a} className="lp-app" onClick={() => actions.openApp(a)}>
+        {pageItems.map((a, i) => (
+          <div key={a} className="lp-app" style={{ '--i': i }} onClick={() => actions.openApp(a)}>
             <div className="lp-app__icon">
               <AppIcon app={a} size={84} />
             </div>

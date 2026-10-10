@@ -5,6 +5,24 @@ import { Icons } from '../icons/AppIcons.jsx'
 import sound from './sound.js'
 
 const GRID = 10
+const GRID_W = 98
+const GRID_H = 86
+const ICON_W = 92
+const MENUBAR_H = 26
+
+/* Icons stack down from just under the menu-bar clock, right-aligned,
+   wrapping into extra columns to the left when a column fills up. */
+const deskPos = (i) => {
+  const marginX = 18
+  const marginY = 10
+  const perCol = Math.max(2, Math.floor((window.innerHeight - MENUBAR_H - marginY * 2) / GRID_H))
+  const col = Math.floor(i / perCol)
+  const row = i % perCol
+  return {
+    x: window.innerWidth - marginX - ICON_W - col * GRID_W,
+    y: marginY + row * GRID_H,
+  }
+}
 
 function KindIcon({ kind, size = 54 }) {
   const map = {
@@ -24,7 +42,12 @@ function KindIcon({ kind, size = 54 }) {
 export default function Desktop() {
   const s = useSystem()
   const deskRef = useRef(null)
-  const [icons, setIcons] = useState(() => [...desktopIcons, ...s.desktopFolders.map((f) => ({ id: 'f-' + f, name: f, kind: 'folder', target: 'finder' }))])
+  const [icons, setIcons] = useState(() => [
+    ...desktopIcons,
+    ...s.desktopFolders
+      .filter((f) => !desktopIcons.some((d) => d.name === f))
+      .map((f) => ({ id: 'f-' + f, name: f, kind: 'folder', target: 'finder' })),
+  ])
   const [pos, setPos] = useState({})
   const [dragging, setDragging] = useState(null)
   const [marquee, setMarquee] = useState(null)
@@ -154,13 +177,13 @@ export default function Desktop() {
     >
       <div className="desktop__icons">
         {icons.map((icon, i) => {
-          const p = pos[icon.id] || { x: 0, y: i * 86 }
+          const p = pos[icon.id] || deskPos(i)
           const sel = s.selectedIcons.includes(icon.id)
           return (
             <div
               key={icon.id}
               className={`desk-icon ${sel ? 'selected' : ''} ${dragging === icon.id ? 'drag' : ''}`}
-              style={{ transform: `translate(${p.x}px, ${p.y}px)`, position: 'absolute', top: 0, left: 0 }}
+              style={{ transform: `translate(${p.x}px, ${p.y}px)`, position: 'absolute', top: 0, left: 0, '--i': i }}
               onPointerDown={(e) => onIconMouseDown(e, icon)}
               onDoubleClick={() => open(icon)}
               onContextMenu={(e) => { e.preventDefault(); e.stopPropagation() }}

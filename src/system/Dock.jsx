@@ -74,7 +74,7 @@ export default function Dock() {
                 height: base * scale,
                 zIndex: Math.round(scale * 10),
                 transform: `translateY(${(scale - 1) * -base * 0.35}px)`,
-                transition: 'transform 0.12s cubic-bezier(0.25,0.1,0.25,1)',
+                transition: 'transform 0.18s cubic-bezier(0.34,1.3,0.64,1)',
               }}
               onClick={(e) => launch(appId, e)}
               onContextMenu={(e) => ctxMenu(e, appId)}

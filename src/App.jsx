@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { actions, useSystem } from './system/store.js'
 import BootScreen from './system/BootScreen.jsx'
 import LockScreen from './system/LockScreen.jsx'
@@ -150,6 +150,18 @@ function useTheme() {
 }
 
 /* ------------------------------------------------------------------ *
+ * Device mode — phone/tablet show the iOS home, desktop shows macOS.
+ * Honours ?os=desktop / ?os=ios overrides. Re-evaluated on resize so
+ * rotating the device or resizing the browser switches live.
+ * ------------------------------------------------------------------ */
+function computeMobile() {
+  const os = new URLSearchParams(window.location.search).get('os')
+  if (os === 'desktop') return false
+  if (os === 'ios') return true
+  return window.matchMedia('(max-width: 820px), (pointer: coarse)').matches
+}
+
+/* ------------------------------------------------------------------ *
  * App
  * ------------------------------------------------------------------ */
 export default function App() {
@@ -157,10 +169,22 @@ export default function App() {
   useShortcuts()
   useBattery()
   useTheme()
-  const isMobile = useMemo(
-    () => window.matchMedia('(max-width: 820px), (pointer: coarse)').matches,
-    [],
-  )
+  const [isMobile, setIsMobile] = useState(computeMobile)
+
+  useEffect(() => {
+    const os = new URLSearchParams(window.location.search).get('os')
+    if (os === 'desktop' || os === 'ios') return
+    const mq = window.matchMedia('(max-width: 820px), (pointer: coarse)')
+    const update = () => setIsMobile(computeMobile())
+    mq.addEventListener('change', update)
+    window.addEventListener('resize', update)
+    window.addEventListener('orientationchange', update)
+    return () => {
+      mq.removeEventListener('change', update)
+      window.removeEventListener('resize', update)
+      window.removeEventListener('orientationchange', update)
+    }
+  }, [])
 
   /* demo helpers — ?skp=1 boots straight to desktop, ?wall & ?app preload */
   useEffect(() => {

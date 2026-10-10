@@ -9,16 +9,17 @@ export default function MissionControl() {
   return (
     <div className="mission" onMouseDown={(e) => { if (e.target === e.currentTarget) actions.closeMission() }}>
       <div className="mission__grid">
-        <div className="mission__card" onClick={() => { actions.closeMission() }}>
+        <div className="mission__card" style={{ '--i': 0 }} onClick={() => { actions.closeMission() }}>
           <div className="mission__thumb">
             <AppIcon app="finder" size={80} />
           </div>
           <div className="mission__name">Desktop</div>
         </div>
-        {wins.map((w) => (
+        {wins.map((w, i) => (
           <div
             key={w.id}
             className="mission__card"
+            style={{ '--i': i + 1 }}
             onClick={() => {
               actions.focusWindow(w.id, true)
               actions.closeMission()

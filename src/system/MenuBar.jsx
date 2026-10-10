@@ -4,6 +4,7 @@ import { appsMeta } from '../data/appsMeta.js'
 import { profile } from '../data/profile.js'
 import Icon from '../icons/UIIcons.jsx'
 import { BrandLogo } from '../icons/AppIcons.jsx'
+import { LOCATION, useWeather, weatherIcon, weatherLabel } from './useWeather.js'
 
 /* ---------------------------------------------------------------- *
  * Menu definitions
@@ -74,10 +75,10 @@ const goMenu = [
   { label: 'Back', shortcut: '⌘[' },
   { label: 'Forward', shortcut: '⌘]' },
   { type: 'sep' },
-  { label: 'Applications', onClick: () => actions.openApp('finder') },
-  { label: 'Desktop', onClick: () => actions.openApp('finder') },
-  { label: 'Documents', onClick: () => actions.openApp('finder') },
-  { label: 'Downloads', onClick: () => actions.openApp('finder') },
+  { label: 'Applications', onClick: () => actions.navigateFinder('smart:applications') },
+  { label: 'Desktop', onClick: () => actions.navigateFinder('smart:desktop') },
+  { label: 'Documents', onClick: () => actions.navigateFinder('documents') },
+  { label: 'Downloads', onClick: () => actions.navigateFinder('downloads') },
 ]
 
 function windowMenu(state) {
@@ -163,6 +164,9 @@ function useClock() {
 
 export default function MenuBar() {
   const state = useSystem()
+  const weather = useWeather()
+  const wx = weather?.current
+  const wxIcon = wx ? weatherIcon(wx.weather_code, wx.is_day) : null
   const [menu, setMenu] = useState(null) // { id, x, y }
   const barRef = useRef(null)
   const now = useClock()
@@ -222,6 +226,18 @@ export default function MenuBar() {
           <div className="menubar__item" style={{ opacity: state.bluetooth ? 1 : 0.4 }}>
             <Icon name="bluetooth" size={15} />
           </div>
+          {wxIcon && (
+            <div
+              className="menubar__item"
+              title={wx ? `${LOCATION.name} · ${Math.round(wx.temperature_2m)}° · ${weatherLabel(wx.weather_code)}` : LOCATION.name}
+              onClick={() => actions.openApp('weather')}
+            >
+              <span className="menubar__icon" style={{ gap: 4 }}>
+                <span style={{ fontSize: 12 }}>{Math.round(wx.temperature_2m)}°</span>
+                <Icon name={wxIcon} size={13} />
+              </span>
+            </div>
+          )}
           <div className={`menubar__item ${state.controlCenterOpen ? 'open' : ''}`} onClick={() => actions.toggleControlCenter()}>
             <Icon name="controlCenter" size={16} />
           </div>

@@ -121,6 +121,7 @@ function initialState() {
     /* misc */
     showHint: persisted.seenHint ? false : true,
     recentlyOpened: [],
+    recentItems: [],
     soundOn: persisted.soundOn ?? true,
     switcherOpen: false,
     switcherIndex: 0,
@@ -274,6 +275,30 @@ export const actions = {
     setTimeout(() => setState({ bouncing: null }), 700)
   },
 
+  /* recents */
+  addRecent(node) {
+    if (!node?.id) return
+    setState({
+      recentItems: [node, ...state.recentItems.filter((r) => r.id !== node.id)].slice(0, 12),
+    })
+  },
+
+  /* finder */
+  setWindowProps(id, props) {
+    setState({
+      windows: state.windows.map((w) => (w.id === id ? { ...w, props: { ...w.props, ...props } } : w)),
+    })
+  },
+  navigateFinder(location) {
+    const existing = state.windows.find((w) => w.appId === 'finder')
+    if (existing) {
+      actions.setWindowProps(existing.id, { location })
+      actions.focusWindow(existing.id, true)
+    } else {
+      actions.openApp('finder', { props: { location } })
+    }
+  },
+
   /* panels */
   toggleControlCenter() {
     setState({ controlCenterOpen: !state.controlCenterOpen, notifCenterOpen: false, openMenu: null })
@@ -413,6 +438,7 @@ export const actions = {
   openApp(appId, opts = {}) {
     const meta = appsMeta[appId]
     if (!meta) return
+    actions.addRecent({ id: 'app-' + appId, name: meta.name, type: 'app', appId })
     const existing = state.windows.find((w) => w.appId === appId)
     if (existing && !opts.forceNew) {
       actions.focusWindow(existing.id, true)

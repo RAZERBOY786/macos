@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { actions } from './store.js'
 import sound from './sound.js'
 import { registry } from './registry.jsx'
@@ -20,6 +20,30 @@ export default function Window({ win, active, dockPosition }) {
     setPos({ x: win.x, y: win.y })
     setSize({ w: win.w, h: win.h })
   }
+
+  // keep the window on-screen when the viewport changes (resize / rotate)
+  useEffect(() => {
+    const onResize = () => {
+      const vw = window.innerWidth
+      const vh = window.innerHeight
+      if (win.maximized) {
+        actions.updateWindowGeom(win.id, { x: 0, y: 27, w: vw, h: vh - 27 })
+        return
+      }
+      const w = Math.min(size.w, Math.max(260, vw - 20))
+      const h = Math.min(size.h, Math.max(180, vh - 26 - 20))
+      const x = Math.max(-w + 120, Math.min(pos.x, vw - 120))
+      const y = Math.max(26, Math.min(pos.y, vh - 40))
+      if (w !== size.w || h !== size.h || x !== pos.x || y !== pos.y) {
+        setSize({ w, h })
+        setPos({ x, y })
+        actions.updateWindowGeom(win.id, { x, y, w, h })
+      }
+    }
+    window.addEventListener('resize', onResize)
+    onResize()
+    return () => window.removeEventListener('resize', onResize)
+  }, [size.w, size.h, pos.x, pos.y, win.maximized, win.id])
 
   const startDrag = (e) => {
     if (win.maximized) return

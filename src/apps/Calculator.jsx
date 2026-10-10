@@ -1,14 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSystem } from '../system/store.js'
+import { Icons } from '../icons/AppIcons.jsx'
 
 const SIGNIFICANT = 12
 const MAX_DIGITS = 12
 
-function Key({ label, cls = '', onClick, wide, active }) {
+const MODES = [
+  { id: 'basic', label: 'Basic' },
+  { id: 'scientific', label: 'Scientific' },
+  { id: 'programmer', label: 'Programmer' },
+  { id: 'convert', label: 'Convert' },
+]
+
+function Key({ label, cls = '', onClick, active }) {
   return (
     <button
       type="button"
-      className={`calc__key ${cls} ${wide ? 'wide' : ''} ${active ? 'active-op' : ''}`}
+      className={`calc__key ${cls} ${active ? 'active-op' : ''}`}
       onClick={onClick}
     >
       {label}
@@ -41,6 +49,16 @@ function format(n) {
   return String(rounded)
 }
 
+/* Group thousands like macOS: 1234567 -> 1,234,567 (keeps decimals/exponent). */
+function group(n) {
+  if (n === 'Error') return n
+  const [int, dec] = n.split('.')
+  if (!/^-?\d+$/.test(int)) return n
+  const sign = int.startsWith('-') ? '-' : ''
+  const digits = sign ? int.slice(1) : int
+  return sign + digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (dec != null ? '.' + dec : '')
+}
+
 export default function Calculator({ win }) {
   const s = useSystem()
   const focused = !!win && s.activeWindowId === win.id
@@ -50,6 +68,18 @@ export default function Calculator({ win }) {
   const [op, setOp] = useState(null)
   const [waiting, setWaiting] = useState(false)
   const [repeat, setRepeat] = useState(null)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  /* close the mode menu when clicking elsewhere */
+  useEffect(() => {
+    if (!menuOpen) return
+    const onDown = (e) => {
+      if (e.target.closest('.calc__mode, .calc__menu')) return
+      setMenuOpen(false)
+    }
+    window.addEventListener('pointerdown', onDown)
+    return () => window.removeEventListener('pointerdown', onDown)
+  }, [menuOpen])
 
   const inputDigit = (d) => {
     if (display === 'Error') {
@@ -182,35 +212,63 @@ export default function Calculator({ win }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [focused])
 
-  const fs = display.length > 11 ? 26 : display.length > 8 ? 38 : 52
+  const shown = group(display)
+  const fs = shown.length > 12 ? 22 : shown.length > 9 ? 30 : 44
 
   return (
     <div className="calc">
-      <div className="calc__display" style={{ fontSize: fs }}>{display}</div>
-      <div className="calc__keys">
-        <Key label={prev == null && op == null ? 'AC' : 'C'} cls="fn" onClick={clear} />
-        <Key label="+/−" cls="fn" onClick={negate} />
-        <Key label="%" cls="fn" onClick={percent} />
-        <Key label="÷" cls="op" active={opActive('÷')} onClick={() => chooseOp('÷')} />
+      <div className="calc__inner">
+        <div className="calc__display" style={{ fontSize: fs }}>{shown}</div>
+        <div className="calc__keys">
+          <Key label={prev == null && op == null ? 'AC' : 'C'} cls="fn" onClick={clear} />
+          <Key label="+/−" cls="fn" onClick={negate} />
+          <Key label="%" cls="fn" onClick={percent} />
+          <Key label="÷" cls="op" active={opActive('÷')} onClick={() => chooseOp('÷')} />
 
-        <Key label="7" onClick={() => inputDigit('7')} />
-        <Key label="8" onClick={() => inputDigit('8')} />
-        <Key label="9" onClick={() => inputDigit('9')} />
-        <Key label="×" cls="op" active={opActive('×')} onClick={() => chooseOp('×')} />
+          <Key label="7" onClick={() => inputDigit('7')} />
+          <Key label="8" onClick={() => inputDigit('8')} />
+          <Key label="9" onClick={() => inputDigit('9')} />
+          <Key label="×" cls="op" active={opActive('×')} onClick={() => chooseOp('×')} />
 
-        <Key label="4" onClick={() => inputDigit('4')} />
-        <Key label="5" onClick={() => inputDigit('5')} />
-        <Key label="6" onClick={() => inputDigit('6')} />
-        <Key label="−" cls="op" active={opActive('−')} onClick={() => chooseOp('−')} />
+          <Key label="4" onClick={() => inputDigit('4')} />
+          <Key label="5" onClick={() => inputDigit('5')} />
+          <Key label="6" onClick={() => inputDigit('6')} />
+          <Key label="−" cls="op" active={opActive('−')} onClick={() => chooseOp('−')} />
 
-        <Key label="1" onClick={() => inputDigit('1')} />
-        <Key label="2" onClick={() => inputDigit('2')} />
-        <Key label="3" onClick={() => inputDigit('3')} />
-        <Key label="+" cls="op" active={opActive('+')} onClick={() => chooseOp('+')} />
+          <Key label="1" onClick={() => inputDigit('1')} />
+          <Key label="2" onClick={() => inputDigit('2')} />
+          <Key label="3" onClick={() => inputDigit('3')} />
+          <Key label="+" cls="op" active={opActive('+')} onClick={() => chooseOp('+')} />
 
-        <Key label="0" wide onClick={() => inputDigit('0')} />
-        <Key label="." onClick={inputDot} />
-        <Key label="=" cls="op" onClick={equals} />
+          <button
+            type="button"
+            className="calc__key calc__mode"
+            title="Calculator mode"
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <Icons.calculator />
+          </button>
+          <Key label="0" onClick={() => inputDigit('0')} />
+          <Key label="." onClick={inputDot} />
+          <Key label="=" cls="op" onClick={equals} />
+        </div>
+
+        {menuOpen && (
+          <div className="calc__menu">
+            {MODES.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                className={`calc__menuitem ${m.id === 'basic' ? 'active' : ''}`}
+                disabled={m.id !== 'basic'}
+                onClick={() => setMenuOpen(false)}
+              >
+                <span className="check">{m.id === 'basic' ? '✓' : ''}</span>
+                {m.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
