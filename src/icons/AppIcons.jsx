@@ -2,28 +2,9 @@
  * AppIcons.jsx — original squircle-style SVG app icons.
  * No copyrighted Apple assets; these are drawn from scratch.
  */
-import React from 'react'
-
 const R = 15 // corner radius on a 64 grid -> macOS squircle feel
 
-function Squircle({ children, from, to, angle = '135deg', stroke }) {
-  const id = React.useId().replace(/:/g, '')
-  return (
-    <svg viewBox="0 0 64 64" className="svgicon" width="100%" height="100%" role="img">
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1" gradientTransform={`rotate(${angle === '135deg' ? 0 : 0})`}>
-          <stop offset="0" stopColor={from} />
-          <stop offset="1" stopColor={to} />
-        </linearGradient>
-      </defs>
-      <rect x="2" y="2" width="60" height="60" rx={R} fill={`url(#${id})`} stroke={stroke || 'rgba(0,0,0,0.08)'} strokeWidth="0.5" />
-      {children}
-    </svg>
-  )
-}
-
-const white = '#ffffff'
-
+// oxlint-disable-next-line react/only-export-components -- Icons maps appIds to icon components
 export const Icons = {
   finder: (p) => (
     <svg viewBox="0 0 64 64" width="100%" height="100%" {...p}>
@@ -82,9 +63,9 @@ export const Icons = {
   ),
 
   messages: (p) => (
-    <Icons._greenBubble p={p} text="💬" />
+    <Icons._greenBubble p={p} />
   ),
-  _greenBubble: ({ p, text }) => (
+  _greenBubble: ({ p }) => (
     <svg viewBox="0 0 64 64" width="100%" height="100%" {...p}>
       <defs>
         <linearGradient id="msg-bg" x1="0" y1="0" x2="0" y2="1">
@@ -411,5 +392,3 @@ export function BrandLogo({ size = 54, color = '#ffffff' }) {
     </svg>
   )
 }
-
-export default Icons

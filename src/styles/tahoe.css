@@ -1,0 +1,467 @@
+/* ===========================================================================
+   macOS Tahoe (26) — "Liquid Glass"
+   ---------------------------------------------------------------------------
+   A dynamic, real-time rendered material: floating multi-layered translucency,
+   optical lensing (inset light refraction), specular highlights and glass
+   edges. Loaded last so it retunes the whole system without touching layout.
+   =========================================================================== */
+
+:root {
+  /* Corner metrics — Tahoe's generous rounding */
+  --radius-window: 16px;
+  --radius-menu: 13px;
+  --radius-glass: 28px;
+
+  /* Material rendering */
+  --lg-blur: 44px;
+  --lg-sat: 190%;
+  --lg-bright: 1.05;
+
+  /* Refracted glass tints (light) */
+  --lg-sheen: rgba(255, 255, 255, 0.62);
+  --lg-edge: rgba(255, 255, 255, 0.66);
+  --lg-tint-1: rgba(255, 255, 255, 0.52);
+  --lg-tint-2: rgba(255, 255, 255, 0.30);
+  --lg-tile: rgba(255, 255, 255, 0.42);
+  --lg-tile-hi: rgba(255, 255, 255, 0.72);
+  --lg-stroke: rgba(255, 255, 255, 0.55);
+  --lg-stroke-out: rgba(255, 255, 255, 0.36);
+  --lg-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -16px 26px -20px rgba(255, 255, 255, 0.95),
+    0 24px 50px rgba(24, 30, 66, 0.22), 0 6px 18px rgba(24, 30, 66, 0.14);
+
+  /* Dark overlay material — for over-content HUD surfaces (always dark) */
+  --lg-dark-sheen: rgba(255, 255, 255, 0.22);
+  --lg-dark-tint-1: rgba(40, 42, 52, 0.52);
+  --lg-dark-tint-2: rgba(18, 19, 26, 0.44);
+  --lg-dark-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 30px 70px rgba(0, 0, 0, 0.5),
+    0 8px 24px rgba(0, 0, 0, 0.34);
+
+  /* Window material (slightly denser for legibility) */
+  --win-tint-1: rgba(255, 255, 255, 0.84);
+  --win-tint-2: rgba(248, 249, 252, 0.76);
+  --lg-titlebar: rgba(255, 255, 255, 0.5);
+  --lg-window-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 34px 80px rgba(18, 24, 58, 0.34),
+    0 10px 26px rgba(18, 24, 58, 0.22);
+
+  /* Retuned surface tokens for translucency */
+  --window-bg: rgba(255, 255, 255, 0.86);
+  --window-bg-2: rgba(244, 245, 249, 0.8);
+  --surface: rgba(255, 255, 255, 0.55);
+  --surface-2: rgba(255, 255, 255, 0.5);
+  --sidebar-bg: rgba(255, 255, 255, 0.42);
+  --titlebar-bg: var(--lg-titlebar);
+  --menu-bg: rgba(255, 255, 255, 0.5);
+  --sheet-bg: rgba(255, 255, 255, 0.62);
+  --control-bg: rgba(255, 255, 255, 0.6);
+  --control-hairline: rgba(255, 255, 255, 0.65);
+  --hairline: rgba(0, 0, 0, 0.12);
+}
+
+:root[data-theme='dark'] {
+  --lg-bright: 1.03;
+  --lg-sheen: rgba(255, 255, 255, 0.22);
+  --lg-edge: rgba(255, 255, 255, 0.22);
+  --lg-tint-1: rgba(46, 48, 60, 0.6);
+  --lg-tint-2: rgba(26, 27, 34, 0.5);
+  --lg-tile: rgba(255, 255, 255, 0.08);
+  --lg-tile-hi: rgba(255, 255, 255, 0.18);
+  --lg-stroke: rgba(255, 255, 255, 0.16);
+  --lg-stroke-out: rgba(255, 255, 255, 0.1);
+  --lg-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -16px 26px -20px rgba(255, 255, 255, 0.18),
+    0 28px 64px rgba(0, 0, 0, 0.55), 0 8px 22px rgba(0, 0, 0, 0.4);
+
+  --win-tint-1: rgba(32, 33, 41, 0.82);
+  --win-tint-2: rgba(22, 23, 30, 0.76);
+  --lg-titlebar: rgba(46, 48, 58, 0.5);
+  --lg-window-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 44px 100px rgba(0, 0, 0, 0.62),
+    0 12px 30px rgba(0, 0, 0, 0.46);
+
+  --window-bg: rgba(30, 31, 38, 0.84);
+  --window-bg-2: rgba(46, 47, 55, 0.82);
+  --surface: rgba(46, 48, 60, 0.5);
+  --surface-2: rgba(255, 255, 255, 0.06);
+  --sidebar-bg: rgba(42, 44, 54, 0.42);
+  --titlebar-bg: var(--lg-titlebar);
+  --menu-bg: rgba(38, 40, 50, 0.55);
+  --sheet-bg: rgba(42, 44, 54, 0.7);
+  --control-bg: rgba(255, 255, 255, 0.1);
+  --control-hairline: rgba(255, 255, 255, 0.16);
+  --hairline: rgba(255, 255, 255, 0.12);
+}
+
+/* ===========================================================================
+   Shared glass material — floating chrome layers
+   =========================================================================== */
+.menubar,
+.menu,
+.panel,
+.spotlight,
+.dialog,
+.notification,
+.dock,
+.dock__tooltip,
+.hint,
+.mission__card {
+  background-color: transparent;
+  background-image: linear-gradient(160deg, var(--lg-sheen) 0%, transparent 42%),
+    linear-gradient(180deg, var(--lg-edge) 0%, transparent 22%),
+    linear-gradient(180deg, var(--lg-tint-1), var(--lg-tint-2));
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat))
+    brightness(var(--lg-bright));
+  backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-sat))
+    brightness(var(--lg-bright));
+  box-shadow: var(--lg-shadow);
+  border: 0.5px solid var(--lg-stroke-out);
+  transition: box-shadow 0.3s var(--ease), background-color 0.3s var(--ease);
+}
+
+/* Recessed inner tiles — layered translucent glass inside panels */
+.cc-tile,
+.widget,
+.store-card,
+.social-row,
+.privacy-card,
+.searchbox,
+.addressbar,
+.segmented {
+  background-color: var(--lg-tile);
+  background-image: linear-gradient(180deg, var(--lg-tile-hi) 0%, transparent 62%);
+  -webkit-backdrop-filter: blur(24px) saturate(170%);
+  backdrop-filter: blur(24px) saturate(170%);
+  box-shadow: inset 0 0 0 0.5px var(--lg-stroke),
+    inset 0 1px 0 var(--lg-tile-hi);
+}
+
+/* Soft frosted glass buttons/controls */
+.btn,
+.iconbtn.on,
+.install-btn,
+.send-btn {
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+}
+
+.btn {
+  background-color: var(--control-bg);
+  box-shadow: inset 0 0 0 0.5px var(--control-hairline),
+    inset 0 1px 0 var(--lg-tile-hi), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* ===========================================================================
+   Menu bar
+   =========================================================================== */
+.menubar {
+  --lg-blur: 40px;
+  box-shadow: var(--lg-shadow), inset 0 -0.5px 0 var(--hairline);
+}
+
+/* ===========================================================================
+   Menus
+   =========================================================================== */
+.menu {
+  --lg-blur: 48px;
+  border-radius: var(--radius-menu);
+}
+
+/* ===========================================================================
+   Dock — the hero glass object, with a slow specular sweep
+   =========================================================================== */
+.dock {
+  position: relative;
+  isolation: isolate;
+  --lg-blur: 46px;
+  border-radius: var(--radius-glass);
+}
+.dock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 32%,
+    var(--lg-sheen) 47%,
+    transparent 62%
+  );
+  background-size: 260% 100%;
+  mix-blend-mode: screen;
+  opacity: 0.55;
+  animation: lgSweep 7.5s var(--ease) infinite;
+}
+@keyframes lgSweep {
+  0% {
+    background-position: 190% 0;
+  }
+  100% {
+    background-position: -90% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dock::before {
+    animation: none;
+    opacity: 0;
+  }
+}
+.dock__item {
+  z-index: 1;
+}
+.dock__dot {
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+}
+
+/* ===========================================================================
+   Panels — Control Center & Notification Center
+   =========================================================================== */
+.panel {
+  --lg-blur: 50px;
+  border-radius: 24px;
+}
+.notif-center {
+  border-radius: 26px;
+}
+.cc-tile,
+.widget {
+  border-radius: 20px;
+}
+.cc-toggle.on .cc-ic {
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55), 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+.slider {
+  background: rgba(120, 120, 128, 0.28);
+  box-shadow: inset 0 0 0 0.5px var(--lg-stroke-out),
+    inset 0 1px 2px rgba(0, 0, 0, 0.18);
+}
+.slider::-webkit-slider-thumb {
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+
+/* ===========================================================================
+   Notifications / Toasts
+   =========================================================================== */
+.notification {
+  --lg-blur: 40px;
+  border-radius: 18px;
+}
+
+/* ===========================================================================
+   Spotlight
+   =========================================================================== */
+.spotlight {
+  --lg-blur: 56px;
+  border-radius: 26px;
+}
+
+/* ===========================================================================
+   Launchpad / iOS dock / App Switcher — dark HUD glass (over content)
+   =========================================================================== */
+.launchpad__search,
+.ios__dock,
+.switcher {
+  background-color: transparent;
+  background-image: linear-gradient(160deg, var(--lg-dark-sheen) 0%, transparent 44%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14) 0%, transparent 26%),
+    linear-gradient(180deg, var(--lg-dark-tint-1), var(--lg-dark-tint-2));
+  -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(170%) brightness(1.05);
+  backdrop-filter: blur(var(--lg-blur)) saturate(170%) brightness(1.05);
+  box-shadow: var(--lg-dark-shadow);
+  border: 0.5px solid rgba(255, 255, 255, 0.14);
+}
+.launchpad__search,
+.ios__dock {
+  --lg-blur: 30px;
+  border-radius: var(--radius-glass);
+}
+.launchpad__search {
+  color: #fff;
+}
+.switcher {
+  --lg-blur: 48px;
+  border-radius: 28px;
+}
+
+/* ===========================================================================
+   Dialogs, Mission Control
+   =========================================================================== */
+.dialog {
+  --lg-blur: 48px;
+  border-radius: 20px;
+}
+.mission__card {
+  --lg-blur: 36px;
+  border-radius: 18px;
+}
+.switcher__item.active {
+  background: var(--lg-tile-hi);
+  box-shadow: inset 0 0 0 0.5px var(--lg-stroke),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* ===========================================================================
+   Windows — the desktop glass frame
+   =========================================================================== */
+.window {
+  background-color: transparent;
+  background-image: linear-gradient(155deg, var(--lg-sheen) 0%, transparent 34%),
+    linear-gradient(180deg, var(--lg-edge) 0%, transparent 14%),
+    linear-gradient(180deg, var(--win-tint-1), var(--win-tint-2));
+  -webkit-backdrop-filter: blur(48px) saturate(185%) brightness(1.04);
+  backdrop-filter: blur(48px) saturate(185%) brightness(1.04);
+  box-shadow: var(--lg-window-shadow);
+  border: 0.5px solid var(--lg-stroke-out);
+}
+.window.maximized {
+  border-radius: 0;
+  border-color: transparent;
+}
+.window__titlebar {
+  background-color: transparent;
+  background-image: linear-gradient(180deg, var(--lg-edge) 0%, transparent 90%);
+  -webkit-backdrop-filter: blur(30px) saturate(170%);
+  backdrop-filter: blur(30px) saturate(170%);
+  border-bottom: 0.5px solid var(--lg-stroke-out);
+}
+.traffic {
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.45),
+    inset 0 1px 1px rgba(255, 255, 255, 0.65);
+}
+.traffic svg {
+  filter: drop-shadow(0 0.5px 0.5px rgba(255, 255, 255, 0.3));
+}
+
+/* ===========================================================================
+   App chrome — sidebars, toolbars, bars
+   =========================================================================== */
+.app {
+  background-color: transparent;
+}
+.sidebar,
+.settings__side,
+.notes-list,
+.mail-list,
+.msg-sidebar,
+.music__side {
+  background-color: var(--sidebar-bg);
+  -webkit-backdrop-filter: blur(34px) saturate(170%);
+  backdrop-filter: blur(34px) saturate(170%);
+  border-right: 0.5px solid var(--lg-stroke-out);
+}
+.toolbar,
+.safari-bar,
+.player,
+.composer {
+  background-color: var(--lg-titlebar);
+  -webkit-backdrop-filter: blur(34px) saturate(170%);
+  backdrop-filter: blur(34px) saturate(170%);
+  border-color: var(--lg-stroke-out);
+}
+.safari-tabs {
+  background-color: transparent;
+}
+.safari-tab.active {
+  background-color: var(--lg-tile-hi);
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+  box-shadow: inset 0 0 0 0.5px var(--lg-stroke),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+.segmented {
+  border-radius: 10px;
+}
+.segmented button.active {
+  background-color: var(--lg-tile-hi);
+  box-shadow: inset 0 0 0 0.5px var(--lg-stroke),
+    0 1px 3px rgba(0, 0, 0, 0.15);
+}
+.switch {
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.06),
+    inset 0 1px 2px rgba(0, 0, 0, 0.22);
+}
+.switch.on {
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.35),
+    inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* ===========================================================================
+   Lock screen field — liquid glass capsule
+   =========================================================================== */
+.lock__field {
+  background-color: transparent;
+  background-image: linear-gradient(160deg, var(--lg-edge) 0%, transparent 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.1));
+  -webkit-backdrop-filter: blur(34px) saturate(180%);
+  backdrop-filter: blur(34px) saturate(180%);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+/* ===========================================================================
+   Accessibility & fallbacks
+   =========================================================================== */
+@media (prefers-reduced-transparency: reduce) {
+  .menubar,
+  .menu,
+  .panel,
+  .spotlight,
+  .dialog,
+  .switcher,
+  .notification,
+  .dock,
+  .dock__tooltip,
+  .hint,
+  .mission__card,
+  .window,
+  .sidebar,
+  .settings__side,
+  .notes-list,
+  .mail-list,
+  .msg-sidebar,
+  .music__side,
+  .toolbar,
+  .safari-bar,
+  .player,
+  .composer {
+    background-image: none;
+    background-color: var(--surface-solid);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .menubar,
+  .menu,
+  .panel,
+  .spotlight,
+  .dialog,
+  .switcher,
+  .notification,
+  .dock,
+  .dock__tooltip,
+  .hint,
+  .mission__card,
+  .window,
+  .sidebar,
+  .settings__side,
+  .notes-list,
+  .mail-list,
+  .msg-sidebar,
+  .music__side,
+  .toolbar,
+  .safari-bar,
+  .player,
+  .composer {
+    background-image: none;
+    background-color: var(--surface-solid);
+  }
+}

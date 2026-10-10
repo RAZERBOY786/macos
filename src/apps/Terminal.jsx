@@ -18,7 +18,7 @@ export default function Terminal() {
   const [input, setInput] = useState('')
   const [history, setHistory] = useState([])
   const [hIndex, setHIndex] = useState(-1)
-  const cwdRef = useRef('~')
+  const [cwd, setCwd] = useState('~')
   const scrollRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -39,11 +39,11 @@ export default function Terminal() {
 
   const run = (raw) => {
     const cmd = raw.trim()
-    print([{ type: 'cmd', text: `${profile.firstName.toLowerCase()}@macbook ${cwdRef.current} % ${raw}` }])
+    print([{ type: 'cmd', text: `${profile.firstName.toLowerCase()}@macbook ${cwd} % ${raw}` }])
     if (!cmd) return
     setHistory((h) => [cmd, ...h].slice(0, 50))
     const [name, ...args] = cmd.split(/\s+/)
-    const dir = getDir(cwdRef.current)
+    const dir = getDir(cwd)
 
     switch (name.toLowerCase()) {
       case 'help':
@@ -102,12 +102,12 @@ export default function Terminal() {
       }
       case 'cd': {
         if (!args[0] || args[0] === '~') {
-          cwdRef.current = '~'
+          setCwd('~')
         } else if (args[0] === '..') {
-          cwdRef.current = '~'
+          setCwd('~')
         } else {
           const found = (dir.children || []).find((c) => c.name.toLowerCase() === args[0].toLowerCase())
-          if (found && (found.type === 'folder' || found.type === 'drive')) cwdRef.current = '~/' + found.name
+          if (found && (found.type === 'folder' || found.type === 'drive')) setCwd('~/' + found.name)
           else print([{ type: 'err', text: `cd: no such directory: ${args[0]}` }])
         }
         break
@@ -205,7 +205,7 @@ export default function Terminal() {
       })}
       <div className="terminal__input-row">
         <span className="prompt">{profile.firstName.toLowerCase()}@macbook</span>
-        <span className="path"> {cwdRef.current} </span>
+        <span className="path"> {cwd} </span>
         <span className="prompt">%&nbsp;</span>
         <input
           ref={inputRef}

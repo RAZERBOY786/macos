@@ -1,6 +1,5 @@
 import { actions, useSystem } from './store.js'
 import { AppIcon } from '../icons/AppIcons.jsx'
-import { appsMeta } from '../data/appsMeta.js'
 
 export default function MissionControl() {
   const s = useSystem()

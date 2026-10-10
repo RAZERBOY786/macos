@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { actions, useSystem } from './store.js'
 import sound from './sound.js'
 
-function Row({ item, onClose }) {
+function Row({ item, onClose, state }) {
   const [open, setOpen] = useState(false)
-  const sub = typeof item.submenu === 'function' ? item.submenu(stateRef()) : item.submenu
+  const sub = typeof item.submenu === 'function' ? item.submenu(state) : item.submenu
   return (
     <div
       className={`menu__row ${item.disabled ? 'disabled' : ''}`}
@@ -22,26 +22,21 @@ function Row({ item, onClose }) {
       {sub && <span className="menu__shortcut">›</span>}
       {sub && open && (
         <div className="menu__sub">
-          <MenuPanel items={sub} onClose={onClose} />
+          <MenuPanel items={sub} onClose={onClose} state={state} />
         </div>
       )}
     </div>
   )
 }
 
-let _state = null
-function stateRef() {
-  return _state
-}
-
-function MenuPanel({ items, onClose }) {
+function MenuPanel({ items, onClose, state }) {
   return (
     <div className="menu">
       {items.map((it, i) =>
         it.type === 'sep' ? (
           <div className="menu__sep" key={i} />
         ) : (
-          <Row key={i} item={it} onClose={onClose} />
+          <Row key={i} item={it} onClose={onClose} state={state} />
         ),
       )}
     </div>
@@ -50,7 +45,6 @@ function MenuPanel({ items, onClose }) {
 
 export default function ContextMenu() {
   const state = useSystem()
-  _state = state
   const cm = state.contextMenu
   if (!cm) return null
   const clampedX = Math.min(cm.x, window.innerWidth - 220)
@@ -66,7 +60,7 @@ export default function ContextMenu() {
           it.type === 'sep' ? (
             <div className="menu__sep" key={i} />
           ) : (
-            <Row key={i} item={it} onClose={() => actions.setContextMenu(null)} />
+            <Row key={i} item={it} onClose={() => actions.setContextMenu(null)} state={state} />
           ),
         )}
       </div>

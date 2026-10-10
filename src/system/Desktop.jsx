@@ -32,8 +32,6 @@ export default function Desktop() {
 
   const wallpaper = s.wallpapers.find((w) => w.id === s.wallpaperId) || s.wallpapers[0]
 
-  const isSelected = (id) => selRef.current.has(id)
-
   const open = (icon) => {
     if (icon.kind === 'hd') actions.openApp('finder', { props: { location: 'macintosh-hd' } })
     else if (icon.kind === 'pdf') actions.openApp('preview')
@@ -91,8 +89,6 @@ export default function Desktop() {
       selRef.current = new Set()
       actions.selectIcons([])
     }
-    const startX = e.clientX
-    const startY = e.clientY
     const rect = deskRef.current.getBoundingClientRect()
     setMarquee({ x: e.clientX - rect.left, y: e.clientY - rect.top, w: 0, h: 0, startX: e.clientX, startY: e.clientY })
     const move = (ev) => {
@@ -102,7 +98,7 @@ export default function Desktop() {
         h: ev.clientY - m.startY,
       }))
     }
-    const up = (ev) => {
+    const up = () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
       setMarquee(null)
@@ -159,7 +155,7 @@ export default function Desktop() {
       <div className="desktop__icons">
         {icons.map((icon, i) => {
           const p = pos[icon.id] || { x: 0, y: i * 86 }
-          const sel = isSelected(icon.id)
+          const sel = s.selectedIcons.includes(icon.id)
           return (
             <div
               key={icon.id}

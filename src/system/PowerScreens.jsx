@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { actions, useSystem } from './store.js'
+import { actions } from './store.js'
 import sound from './sound.js'
 import Icon from '../icons/UIIcons.jsx'
 
@@ -40,8 +40,4 @@ export function SleepScreen() {
       </div>
     </div>
   )
-}
-
-export function useBooted(state) {
-  return state.phase === 'desktop'
 }

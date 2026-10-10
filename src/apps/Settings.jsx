@@ -18,6 +18,8 @@ const NAV = [
   { id: 'about', name: 'About', icon: 'info', color: '#8e8e93' },
 ]
 
+const ACCENTS = ['#007aff', '#af52de', '#ff2d55', '#ff9500', '#34c759', '#8e8e93']
+
 function Row({ title, subtitle, children }) {
   return (
     <div className="setting-row">
@@ -37,6 +39,10 @@ function Switch({ on, onClick }) {
 export default function Settings() {
   const state = useSystem()
   const [pane, setPane] = useState('appearance')
+  const [tinting, setTinting] = useState(false)
+  const [trueTone, setTrueTone] = useState(true)
+  const [notifOn, setNotifOn] = useState(true)
+  const [previewsOn, setPreviewsOn] = useState(true)
 
   return (
     <div className="settings">
@@ -73,13 +79,26 @@ export default function Settings() {
             </Row>
             <Row title="Accent colour" subtitle="Used throughout the system.">
               <div style={{ display: 'flex', gap: 8 }}>
-                {['#007aff', '#af52de', '#ff2d55', '#ff9500', '#34c759', '#8e8e93'].map((c) => (
-                  <span key={c} style={{ width: 20, height: 20, borderRadius: '50%', background: c, boxShadow: 'inset 0 0 0 1px rgba(0,0,0,0.1)' }} />
+                {ACCENTS.map((c) => (
+                  <button
+                    key={c}
+                    aria-label={`Accent colour ${c}`}
+                    aria-pressed={state.accent === c}
+                    onClick={() => actions.setAccent(c)}
+                    style={{
+                      width: 20,
+                      height: 20,
+                      padding: 0,
+                      borderRadius: '50%',
+                      background: c,
+                      boxShadow: state.accent === c ? `0 0 0 2px var(--window-bg), 0 0 0 4px ${c}` : 'inset 0 0 0 1px rgba(0,0,0,0.1)',
+                    }}
+                  />
                 ))}
               </div>
             </Row>
             <Row title="Allow wallpaper tinting" subtitle="Tint windows to match the wallpaper.">
-              <Switch on={false} onClick={() => {}} />
+              <Switch on={tinting} onClick={() => setTinting((v) => !v)} />
             </Row>
           </>
         )}
@@ -109,7 +128,7 @@ export default function Settings() {
               <input className="slider" style={{ width: 220 }} type="range" min="0.35" max="1" step="0.01" value={state.brightness} onChange={(e) => actions.setBrightness(+e.target.value)} />
             </Row>
             <Row title="True Tone" subtitle="Automatically adapt display colour.">
-              <Switch on onClick={() => {}} />
+              <Switch on={trueTone} onClick={() => setTrueTone((v) => !v)} />
             </Row>
           </>
         )}
@@ -159,10 +178,10 @@ export default function Settings() {
           <>
             <h2>Notifications</h2>
             <Row title="Allow notifications" subtitle="When the screen is locked.">
-              <Switch on onClick={() => {}} />
+              <Switch on={notifOn} onClick={() => setNotifOn((v) => !v)} />
             </Row>
             <Row title="Show previews" subtitle="Always">
-              <Switch on onClick={() => {}} />
+              <Switch on={previewsOn} onClick={() => setPreviewsOn((v) => !v)} />
             </Row>
             <Row title="Focus" subtitle="Silence notifications temporarily.">
               <Switch on={state.focus} onClick={actions.toggleFocus} />
@@ -227,8 +246,8 @@ export default function Settings() {
             <Row title="About" subtitle={`${profile.system.model} · ${profile.system.chip}`}>
               <button className="btn" style={{ flex: 'none' }} onClick={() => actions.openApp('about')}>More Info</button>
             </Row>
-            <Row title="Software Update" subtitle="macOS is up to date">
-              <span className="badge">14.5</span>
+            <Row title="Software Update" subtitle="macOS Tahoe 26 is up to date">
+              <span className="badge">26</span>
             </Row>
             <Row title="Reset all settings" subtitle="Clear saved wallpaper, theme and data.">
               <button className="btn" style={{ flex: 'none' }} onClick={() => { localStorage.clear(); location.reload() }}>Reset</button>

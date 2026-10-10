@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { actions } from './store.js'
 import sound from './sound.js'
 import { registry } from './registry.jsx'
@@ -10,13 +10,16 @@ export default function Window({ win, active, dockPosition }) {
   const [size, setSize] = useState({ w: win.w, h: win.h })
   const [closing, setClosing] = useState(false)
   const [minimizing, setMinimizing] = useState(false)
+  const [interacting, setInteracting] = useState(false)
+  const [geom, setGeom] = useState({ x: win.x, y: win.y, w: win.w, h: win.h })
   const dragRef = useRef(null)
 
   // sync when the store changes geometry (maximise etc.)
-  useEffect(() => {
+  if (win.x !== geom.x || win.y !== geom.y || win.w !== geom.w || win.h !== geom.h) {
+    setGeom({ x: win.x, y: win.y, w: win.w, h: win.h })
     setPos({ x: win.x, y: win.y })
     setSize({ w: win.w, h: win.h })
-  }, [win.x, win.y, win.w, win.h])
+  }
 
   const startDrag = (e) => {
     if (win.maximized) return
@@ -27,6 +30,7 @@ export default function Window({ win, active, dockPosition }) {
     const ox = pos.x
     const oy = pos.y
     dragRef.current = { startX, startY, ox, oy }
+    setInteracting(true)
     document.body.style.cursor = 'grabbing'
 
     const move = (ev) => {
@@ -38,6 +42,7 @@ export default function Window({ win, active, dockPosition }) {
       document.body.style.cursor = ''
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
+      setInteracting(false)
       setPos((p) => {
         actions.updateWindowGeom(win.id, { x: p.x, y: p.y })
         return p
@@ -50,6 +55,7 @@ export default function Window({ win, active, dockPosition }) {
   const startResize = (e, dir) => {
     e.preventDefault()
     e.stopPropagation()
+    setInteracting(true)
     const startX = e.clientX
     const startY = e.clientY
     const o = { ...pos, ...size }
@@ -73,6 +79,7 @@ export default function Window({ win, active, dockPosition }) {
     const up = () => {
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
+      setInteracting(false)
       setPos((p) => {
         actions.updateWindowGeom(win.id, { x: p.x, y: p.y, w: size.w, h: size.h })
         return p
@@ -89,19 +96,19 @@ export default function Window({ win, active, dockPosition }) {
   const close = () => {
     sound.close()
     setClosing(true)
-    setTimeout(() => actions.closeWindow(win.id), 190)
+    setTimeout(() => actions.closeWindow(win.id), 200)
   }
   const minimize = () => {
     sound.minimize()
     setMinimizing(true)
-    setTimeout(() => actions.minimizeWindow(win.id), 300)
+    setTimeout(() => actions.minimizeWindow(win.id), 320)
   }
 
   if (!App) return null
 
   return (
     <div
-      className={`window ${active ? '' : 'inactive'} ${win.maximized ? 'maximized' : ''} ${closing ? 'closing' : ''} ${minimizing ? 'minimizing' : ''}`}
+      className={`window ${active ? '' : 'inactive'} ${win.maximized ? 'maximized' : ''} ${closing ? 'closing' : ''} ${minimizing ? 'minimizing' : ''} ${interacting ? 'dragging' : ''}`}
       style={{
         left: pos.x,
         top: pos.y,

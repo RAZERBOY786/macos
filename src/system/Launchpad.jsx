@@ -11,11 +11,6 @@ export default function Launchpad() {
   const [page, setPage] = useState(0)
 
   useEffect(() => {
-    setQ('')
-    setPage(0)
-  }, [s.launchpadOpen])
-
-  useEffect(() => {
     const onKey = (e) => {
       if (e.key === 'Escape') actions.closeLaunchpad()
     }

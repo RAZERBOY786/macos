@@ -30,7 +30,7 @@ function MiniCalendar({ now }) {
 
 export default function NotificationCenter() {
   const s = useSystem()
-  const [now, setNow] = useState(() => new Date())
+  const [now] = useState(() => new Date())
   const open = s.notifCenterOpen
 
   if (!open) return null
@@ -41,7 +41,7 @@ export default function NotificationCenter() {
         <div style={{ fontSize: 13, fontWeight: 600 }}>
           {now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
         </div>
-        <MiniCalendar now={new Date()} />
+        <MiniCalendar now={now} />
         <button className="widget-label-btn" onClick={() => actions.openApp('calendar')}>
           Open Calendar ›
         </button>

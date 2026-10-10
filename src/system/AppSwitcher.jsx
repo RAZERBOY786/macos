@@ -1,4 +1,4 @@
-import { actions, useSystem } from './store.js'
+import { useSystem } from './store.js'
 import { AppIcon } from '../icons/AppIcons.jsx'
 import { appsMeta } from '../data/appsMeta.js'
 
@@ -7,7 +7,6 @@ export default function AppSwitcher() {
   if (!s.switcherOpen) return null
   const apps = s.dockRunning
   const idx = s.switcherIndex % Math.max(1, apps.length)
-  const current = apps[idx]
 
   return (
     <div className="switcher">

@@ -15,9 +15,19 @@ export default function Music() {
   const audioRef = useRef(null)
   const track = tracks[index]
 
-  /* Real audio if a src is provided, otherwise a simulated clock. */
+  /* Real audio when a src is provided, otherwise a simulated clock. */
   useEffect(() => {
-    if (!playing) return
+    const audio = audioRef.current
+    if (audio && track.src) {
+      if (audio.getAttribute('src') !== track.src) audio.src = track.src
+      audio.volume = volume
+      if (playing) audio.play().catch(() => {})
+      else audio.pause()
+    }
+  }, [playing, index, track.src, volume])
+
+  useEffect(() => {
+    if (!playing || track.src) return
     const id = setInterval(() => {
       setTime((t) => {
         if (t + 1 >= track.duration) {
@@ -30,7 +40,7 @@ export default function Music() {
     }, 1000)
     return () => clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playing, index, repeat])
+  }, [playing, index, repeat, track.src])
 
   const play = (i = index) => {
     setIndex(i)
@@ -51,6 +61,7 @@ export default function Music() {
 
   return (
     <div className="music">
+      <audio ref={audioRef} />
       <div className="music__side">
         <div className="sidebar__section">Library</div>
         {[

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { launchpadApps, appsMeta } from '../data/appsMeta.js'
 import { AppIcon } from '../icons/AppIcons.jsx'
-import Icon from '../icons/UIIcons.jsx'
 import { registry } from './registry.jsx'
 import { useSystem } from './store.js'
 
@@ -10,7 +9,7 @@ const dockHome = ['messages', 'mail', 'safari', 'photos', 'music']
 export default function MobileHome() {
   const s = useSystem()
   const [open, setOpen] = useState(null)
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)

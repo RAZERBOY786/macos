@@ -852,6 +852,9 @@
    Calendar / Reminders
    =========================================================================== */
 .calendar {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -869,6 +872,7 @@
 }
 .calendar__grid {
   flex: 1;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-auto-rows: 1fr;
@@ -903,24 +907,15 @@
   place-items: center;
 }
 .calendar__dow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
   text-align: center;
   font-size: 11px;
   color: var(--text-3);
-  padding-bottom: 6px;
+  padding: 0 0 6px;
   font-weight: 600;
 }
-.calendar__event {
-  font-size: 10.5px;
-  background: rgba(0, 122, 255, 0.15);
-  color: var(--blue);
-  border-left: 2px solid var(--blue);
-  padding: 1px 4px;
-  border-radius: 3px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
 .reminders {
   padding: 18px 22px;
   height: 100%;

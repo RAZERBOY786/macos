@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { fileSystem, findNode, pathTo } from '../data/fs.js'
 import { actions } from '../system/store.js'
 import sound from '../system/sound.js'
@@ -45,10 +45,9 @@ export default function Finder({ win }) {
 
   const current = stack[stack.length - 1]
   const rawChildren = current.children || []
-  const children = useMemo(() => {
-    if (!query.trim()) return rawChildren
-    return rawChildren.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()))
-  }, [rawChildren, query])
+  const children = query.trim()
+    ? rawChildren.filter((c) => c.name.toLowerCase().includes(query.toLowerCase()))
+    : rawChildren
 
   const open = (node) => {
     if (node.type === 'folder' || node.type === 'drive' || node.type === 'project') {

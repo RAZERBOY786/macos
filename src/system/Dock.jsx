@@ -36,7 +36,7 @@ export default function Dock() {
     setPointerX(e.clientX - r.left)
   }
 
-  const scaleFor = (i, count) => {
+  const scaleFor = (i) => {
     if (!magnify || pointerX == null) return 1
     const itemWidth = base + gap
     const center = itemWidth * i + base / 2
@@ -64,7 +64,7 @@ export default function Dock() {
       >
         {dockApps.map((appId, i) => {
           const running = state.dockRunning.includes(appId)
-          const scale = scaleFor(i, dockApps.length)
+          const scale = scaleFor(i)
           return (
             <div
               key={appId}

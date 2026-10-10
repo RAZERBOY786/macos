@@ -42,6 +42,7 @@ function initialState() {
 
     /* appearance */
     theme: persisted.theme || 'light', // light | dark | auto
+    accent: persisted.accent || '#007aff',
     wallpaperId: persisted.wallpaperId || 'sonoma',
     wallpapers: defaultWallpapers(),
     brightness: persisted.brightness ?? 1, // 0.35 .. 1
@@ -119,13 +120,13 @@ const listeners = new Set()
 function persist() {
   try {
     const {
-      theme, wallpaperId, brightness, volume, muted, wifi, bluetooth,
+      theme, accent, wallpaperId, brightness, volume, muted, wifi, bluetooth,
       airdrop, dock, desktopFolders, notes, reminders, files, soundOn,
     } = state
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        theme, wallpaperId, brightness, volume, muted, wifi, bluetooth,
+        theme, accent, wallpaperId, brightness, volume, muted, wifi, bluetooth,
         airdrop, dock, desktopFolders, notes, reminders, files, soundOn,
         seenHint: true,
       }),
@@ -200,6 +201,9 @@ export const actions = {
   /* appearance */
   setTheme(theme) {
     setPersist({ theme })
+  },
+  setAccent(accent) {
+    setPersist({ accent })
   },
   cycleTheme() {
     const order = ['light', 'dark', 'auto']

@@ -17,6 +17,7 @@ import Dialog from './system/Dialog.jsx'
 import ContextMenu from './system/ContextMenu.jsx'
 import Toasts from './system/Toasts.jsx'
 import MobileHome from './system/MobileHome.jsx'
+import sound from './system/sound.js'
 
 /* ------------------------------------------------------------------ *
  * Screenshot (Cmd/Ctrl+Shift+3) — serialises the live DOM into a PNG.
@@ -62,7 +63,10 @@ function captureScreenshot() {
 function useShortcuts() {
   const stateRef = useRef(null)
   const st = useSystem()
-  stateRef.current = st
+
+  useEffect(() => {
+    stateRef.current = st
+  }, [st])
 
   useEffect(() => {
     const down = (e) => {
@@ -141,7 +145,8 @@ function useTheme() {
       theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
     }
     root.dataset.theme = theme
-  }, [s.theme])
+    root.style.setProperty('--blue', s.accent)
+  }, [s.theme, s.accent])
 }
 
 /* ------------------------------------------------------------------ *
@@ -159,7 +164,7 @@ export default function App() {
 
   /* first-interaction unlocks audio */
   useEffect(() => {
-    const unlock = () => import('./system/sound.js').then(({ sound }) => sound.unlock())
+    const unlock = () => sound.unlock()
     window.addEventListener('pointerdown', unlock, { once: true })
     window.addEventListener('keydown', unlock, { once: true })
     return () => {

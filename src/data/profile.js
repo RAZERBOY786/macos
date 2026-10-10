@@ -211,7 +211,7 @@ export const profile = {
     chip: 'Apple M3 Pro',
     memory: '18 GB',
     serial: 'C02XX000XXXX',
-    osVersion: 'macOS Sonoma 14.5',
+    osVersion: 'macOS Tahoe 26',
   },
 }
 

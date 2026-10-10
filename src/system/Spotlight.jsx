@@ -13,7 +13,6 @@ export default function Spotlight() {
 
   useEffect(() => {
     inputRef.current?.focus()
-    setActive(0)
   }, [])
 
   const results = useMemo(() => {

@@ -67,7 +67,7 @@ const viewMenu = [
   { label: 'as List', shortcut: '⌘2' },
   { label: 'as Columns', shortcut: '⌘3' },
   { type: 'sep' },
-  { label: 'Enter Full Screen', shortcut: '⌃⌘F', onClick: () => { const s = document; s.fullscreenElement ? s.exitFullscreen() : s.documentElement.requestFullscreen?.() } },
+  { label: 'Enter Full Screen', shortcut: '⌃⌘F', onClick: () => { const el = document; if (el.fullscreenElement) el.exitFullscreen(); else el.documentElement.requestFullscreen?.() } },
 ]
 
 const goMenu = [
@@ -153,7 +153,7 @@ function MenuRow({ item, onClose, depth, state }) {
 const APP_MENUS = ['File', 'Edit', 'View', 'Go', 'Window', 'Help']
 
 function useClock() {
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)

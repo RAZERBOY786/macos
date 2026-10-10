@@ -5,7 +5,7 @@ import sound from './sound.js'
 import Icon from '../icons/UIIcons.jsx'
 
 function useNow() {
-  const [now, setNow] = useState(new Date())
+  const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000)
     return () => clearInterval(id)
@@ -59,8 +59,10 @@ export default function LockScreen() {
         <div className="lock__time">{timeStr}</div>
       </div>
 
-      <div className={`lock__avatar ${pulse ? 'rs-pulse' : ''}`} style={{ backgroundImage: `url("${profile.avatar}")` }} />
-      <div className="lock__name">{profile.name}</div>
+      <div className="lock__center">
+        <div className={`lock__avatar ${pulse ? 'rs-pulse' : ''}`} style={{ backgroundImage: `url("${profile.avatar}")` }} />
+        <div className="lock__name">{profile.name}</div>
+      </div>
 
       <div className={`lock__field ${shake ? 'shake' : ''}`}>
         <Icon name="lock" size={15} color="rgba(255,255,255,0.85)" />
@@ -77,6 +79,9 @@ export default function LockScreen() {
         </button>
       </div>
       <div className="lock__hint">Touch ID or enter password</div>
+      <button className="lock__switch" onClick={() => { sound.click(); actions.notify({ appId: 'settings', title: 'User Switcher', body: "There's only one user on this Mac." }) }}>
+        Switch User
+      </button>
 
       <div className="lock__bottom">
         <button onClick={() => { sound.click(); actions.restart() }}>
