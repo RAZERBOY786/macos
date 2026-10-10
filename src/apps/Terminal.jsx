@@ -122,7 +122,7 @@ export default function Terminal() {
       }
       case 'open': {
         const appId = (args[0] || '').toLowerCase()
-        const map = { finder: 'finder', safari: 'safari', notes: 'notes', photos: 'photos', music: 'music', calculator: 'calculator', settings: 'settings', vscode: 'vscode', messages: 'messages', mail: 'mail', calendar: 'calendar', maps: 'maps', preview: 'preview' }
+        const map = { finder: 'finder', safari: 'safari', notes: 'notes', photos: 'photos', music: 'music', calculator: 'calculator', settings: 'settings', messages: 'messages', mail: 'mail', calendar: 'calendar', maps: 'maps', preview: 'preview' }
         if (map[appId]) {
           actions.openApp(map[appId])
           print([{ type: 'ok', text: `Opening ${map[appId]}…` }])

@@ -29,6 +29,22 @@ export function defaultWallpapers() {
     { id: 'graphite', name: 'Graphite', css: 'linear-gradient(160deg,#e8e8ec 0%,#c3c4c9 60%,#9a9ba1 100%)' },
     { id: 'sunrise', name: 'Sunrise', css: 'linear-gradient(180deg,#ff9a6c 0%,#ff6b9d 45%,#845ec2 100%)' },
     { id: 'aqua', name: 'Aqua', css: 'linear-gradient(160deg,#5ac8fa 0%,#007aff 60%,#1b3b8b 100%)' },
+    {
+      id: 'bigsur',
+      name: 'Big Sur',
+      css: 'url("/wallpapers/macos-big-sur-apple-layers-fluidic-colorful-wwdc-stock-4096x2304-1455.jpg")',
+    },
+    {
+      id: 'monterey',
+      name: 'Monterey',
+      css: 'url("/wallpapers/macos-monterey-wwdc-21-stock-dark-mode-5k-6016x6016-5585.jpg")',
+    },
+    {
+      id: 'sequoia',
+      name: 'Sequoia',
+      css: 'url("/wallpapers/macos-sequoia-forest-3840x2160-24082.jpg")',
+    },
+    { id: 'custom', name: 'Custom Logo', css: 'url("/wallpapers/log3.png")' },
   ]
 }
 

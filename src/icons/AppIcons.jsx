@@ -229,14 +229,6 @@ export const Icons = {
     </svg>
   ),
 
-  vscode: (p) => (
-    <svg viewBox="0 0 64 64" width="100%" height="100%" {...p}>
-      <rect x="2" y="2" width="60" height="60" rx={R} fill="#0a2a4a" stroke="rgba(0,0,0,0.1)" strokeWidth="0.5" />
-      <path d="M46 12l-20 18 8 8-8 8 20 18V12z" fill="#fff" />
-      <path d="M26 30L12 20l-5 3 10 9-10 9 5 3 14-10z" fill="#4aa8ff" />
-    </svg>
-  ),
-
   calculator: (p) => (
     <svg viewBox="0 0 64 64" width="100%" height="100%" {...p}>
       <rect x="2" y="2" width="60" height="60" rx={R} fill="#1c1c1e" stroke="rgba(0,0,0,0.2)" strokeWidth="0.5" />

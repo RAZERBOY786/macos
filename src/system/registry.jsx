@@ -5,7 +5,6 @@ import Photos from '../apps/Photos.jsx'
 import Messages from '../apps/Messages.jsx'
 import Mail from '../apps/Mail.jsx'
 import Terminal from '../apps/Terminal.jsx'
-import VSCode from '../apps/VSCode.jsx'
 import Music from '../apps/Music.jsx'
 import Calculator from '../apps/Calculator.jsx'
 import CalendarApp from '../apps/CalendarApp.jsx'
@@ -29,7 +28,6 @@ export const registry = {
   messages: Messages,
   mail: Mail,
   terminal: Terminal,
-  vscode: VSCode,
   music: Music,
   calculator: Calculator,
   calendar: CalendarApp,

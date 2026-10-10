@@ -18,7 +18,7 @@ export default function Maps() {
         <iframe
           className="map-embed"
           title="map"
-          src="https://www.openstreetmap.org/export/embed.html?bbox=-122.52%2C37.70%2C-122.35%2C37.83&layer=mapnik&marker=37.7749%2C-122.4194"
+          src="https://www.openstreetmap.org/export/embed.html?bbox=88.28%2C22.48%2C88.44%2C22.65&layer=mapnik&marker=22.5726%2C88.3639"
         />
         <div
           style={{

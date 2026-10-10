@@ -15,7 +15,7 @@ export const profile = {
   initials: 'YN',
   role: 'Full-Stack Developer',
   company: 'Freelance',
-  location: 'San Francisco, CA',
+  location: 'Kolkata, India',
   // A short one-liner used on the lock screen, About This Mac, etc.
   tagline: 'I build delightful products for the web.',
   avatar:
@@ -68,7 +68,7 @@ export const profile = {
       role: 'Senior Full-Stack Developer',
       company: 'Acme Corp',
       period: '2022 — Present',
-      location: 'San Francisco, CA',
+      location: 'Kolkata, India',
       points: [
         'Led a team of 4 engineers rebuilding the core dashboard in React + TypeScript.',
         'Cut page load time by 63% through code-splitting and edge caching.',

@@ -22,7 +22,7 @@ export const fileSystem = {
       type: 'folder',
       children: [
         'finder', 'safari', 'messages', 'mail', 'notes', 'photos', 'music',
-        'terminal', 'vscode', 'calculator', 'settings',
+        'terminal', 'calculator', 'settings',
       ].map((a) => ({ id: 'app-' + a, name: a, type: 'app', appId: a })),
     },
     {
