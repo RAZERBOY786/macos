@@ -1,0 +1,402 @@
+/* ===========================================================================
+   macOS Portfolio — Global Design System
+   =========================================================================== */
+
+:root {
+  /* System colors */
+  --blue: #007aff;
+  --blue-dark: #0060df;
+  --red: #ff5f57;
+  --yellow: #febc2e;
+  --green: #28c840;
+  --orange: #ff9500;
+  --purple: #af52de;
+  --pink: #ff2d55;
+  --teal: #5ac8fa;
+  --gray: #8e8e93;
+
+  /* Light theme surfaces */
+  --bg-desktop: #d9d3ea;
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-solid: #ffffff;
+  --surface-2: rgba(246, 246, 248, 0.86);
+  --window-bg: #ffffff;
+  --window-bg-2: #f5f5f7;
+  --sidebar-bg: rgba(246, 246, 248, 0.6);
+  --titlebar-bg: rgba(246, 246, 248, 0.86);
+  --text: #1d1d1f;
+  --text-2: #6e6e73;
+  --text-3: #86868b;
+  --hairline: rgba(0, 0, 0, 0.1);
+  --hairline-2: rgba(0, 0, 0, 0.06);
+  --hover: rgba(0, 0, 0, 0.05);
+  --active: rgba(0, 0, 0, 0.09);
+  --selection: rgba(0, 122, 255, 0.9);
+  --shadow-window: 0 22px 70px rgba(0, 0, 0, 0.28), 0 2px 10px rgba(0, 0, 0, 0.16);
+  --shadow-window-inactive: 0 12px 40px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(0, 0, 0, 0.1);
+  --shadow-menu: 0 12px 40px rgba(0, 0, 0, 0.24), 0 0 0 0.5px rgba(0, 0, 0, 0.08);
+  --menu-bg: rgba(255, 255, 255, 0.78);
+  --control-bg: rgba(255, 255, 255, 0.9);
+  --control-hairline: rgba(0, 0, 0, 0.12);
+  --sheet-bg: rgba(255, 255, 255, 0.96);
+
+  /* Metrics */
+  --menubar-h: 26px;
+  --radius-window: 11px;
+  --radius-menu: 8px;
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI',
+    sans-serif;
+  --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+}
+
+/* Dark theme */
+:root[data-theme='dark'] {
+  --bg-desktop: #1a1a24;
+  --surface: rgba(40, 40, 46, 0.62);
+  --surface-solid: #1e1e22;
+  --surface-2: rgba(40, 40, 46, 0.86);
+  --window-bg: #1e1e22;
+  --window-bg-2: #2a2a2e;
+  --sidebar-bg: rgba(40, 40, 46, 0.5);
+  --titlebar-bg: rgba(40, 40, 46, 0.86);
+  --text: #f5f5f7;
+  --text-2: #a1a1a6;
+  --text-3: #8e8e93;
+  --hairline: rgba(255, 255, 255, 0.12);
+  --hairline-2: rgba(255, 255, 255, 0.07);
+  --hover: rgba(255, 255, 255, 0.08);
+  --active: rgba(255, 255, 255, 0.14);
+  --shadow-window: 0 22px 70px rgba(0, 0, 0, 0.6), 0 2px 10px rgba(0, 0, 0, 0.4);
+  --shadow-window-inactive: 0 12px 40px rgba(0, 0, 0, 0.4);
+  --shadow-menu: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 0 0.5px rgba(255, 255, 255, 0.1);
+  --menu-bg: rgba(40, 40, 46, 0.72);
+  --control-bg: rgba(58, 58, 64, 0.9);
+  --control-hairline: rgba(255, 255, 255, 0.14);
+  --sheet-bg: rgba(40, 40, 46, 0.97);
+}
+
+/* Auto theme follows the OS (JS also toggles data-theme) */
+:root[data-theme='auto'] {
+  color-scheme: light dark;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font);
+  color: var(--text);
+  overflow: hidden;
+  user-select: none;
+  background: #000;
+}
+
+button {
+  font-family: inherit;
+  cursor: default;
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+input,
+textarea {
+  font-family: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.28);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.45);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Cursor theme (overrides on desktop for links) */
+.cursor-default {
+  cursor: default;
+}
+.cursor-pointer,
+a,
+button,
+.link {
+  cursor: pointer;
+}
+
+/* Loading beachball */
+.beachball {
+  width: 22px;
+  height: 22px;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===========================================================================
+   Boot screen
+   =========================================================================== */
+.boot {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.9s var(--ease);
+}
+.boot__logo {
+  margin-bottom: 46px;
+  animation: fadeIn 1.1s var(--ease) both;
+}
+.boot__bar {
+  width: 220px;
+  height: 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.22);
+  overflow: hidden;
+}
+.boot__bar > i {
+  display: block;
+  height: 100%;
+  border-radius: 5px;
+  background: #fff;
+  transition: width 0.35s var(--ease);
+}
+.boot__hint {
+  position: absolute;
+  bottom: 64px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  letter-spacing: 0.2px;
+  animation: pulseHint 2.4s var(--ease) infinite;
+}
+@keyframes pulseHint {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+.boot--clickable {
+  cursor: pointer;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ===========================================================================
+   Lock / Login screen
+   =========================================================================== */
+.lock {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  overflow: hidden;
+}
+.lock__bg {
+  position: absolute;
+  inset: -40px;
+  background-size: cover;
+  background-position: center;
+  filter: blur(26px) saturate(150%) brightness(0.82);
+  transform: scale(1.08);
+  z-index: -1;
+}
+.lock__clock {
+  position: absolute;
+  top: 8%;
+  text-align: center;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.35);
+}
+.lock__date {
+  font-size: 20px;
+  font-weight: 500;
+  opacity: 0.95;
+  letter-spacing: 0.2px;
+}
+.lock__time {
+  font-size: 86px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.lock__avatar {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+.lock__avatar.rs-pulse {
+  animation: avatarPulse 0.8s var(--ease);
+}
+@keyframes avatarPulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.14);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.lock__name {
+  margin-top: 14px;
+  font-size: 18px;
+  font-weight: 600;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.4);
+}
+.lock__field {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 230px;
+  padding: 8px 12px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: inset 0 0 0 0.5px rgba(255, 255, 255, 0.35);
+}
+.lock__field input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #fff;
+  font-size: 14px;
+}
+.lock__field input::placeholder {
+  color: rgba(255, 255, 255, 0.7);
+}
+.lock__field.shake {
+  animation: shake 0.4s var(--ease);
+}
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-8px);
+  }
+  40% {
+    transform: translateX(8px);
+  }
+  60% {
+    transform: translateX(-5px);
+  }
+  80% {
+    transform: translateX(5px);
+  }
+}
+.lock__hint {
+  margin-top: 14px;
+  font-size: 12.5px;
+  opacity: 0.85;
+}
+.lock__bottom {
+  position: absolute;
+  bottom: 40px;
+  display: flex;
+  gap: 42px;
+  opacity: 0.9;
+}
+.lock__bottom button {
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+.lock__bottom button:hover {
+  opacity: 1;
+}
+.lock__zoom {
+  animation: lockZoom 0.7s var(--ease-out) forwards;
+}
+@keyframes lockZoom {
+  to {
+    opacity: 0;
+    transform: scale(1.5);
+    filter: blur(6px);
+  }
+}
+
+/* Shutdown / sleep screen */
+.power {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.power button {
+  padding: 14px 30px;
+  border-radius: 100px;
+  color: #fff;
+  font-size: 15px;
+  letter-spacing: 0.2px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.22);
+  transition: background 0.2s var(--ease);
+}
+.power button:hover {
+  background: rgba(255, 255, 255, 0.16);
+}

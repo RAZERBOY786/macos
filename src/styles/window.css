@@ -1,0 +1,377 @@
+/* ===========================================================================
+   Windows
+   =========================================================================== */
+.window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  min-height: 200px;
+  border-radius: var(--radius-window);
+  background: var(--window-bg);
+  box-shadow: var(--shadow-window);
+  overflow: hidden;
+  color: var(--text);
+  animation: winOpen 0.28s var(--ease-out);
+  will-change: transform, opacity;
+}
+@keyframes winOpen {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.window.closing {
+  animation: winClose 0.2s var(--ease) forwards;
+}
+@keyframes winClose {
+  to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+.window.minimizing {
+  animation: winMin 0.32s var(--ease) forwards;
+}
+@keyframes winMin {
+  to {
+    opacity: 0;
+    transform: scale(0.2) translateY(60vh);
+  }
+}
+.window.inactive {
+  box-shadow: var(--shadow-window-inactive);
+}
+.window.maximized {
+  border-radius: 0;
+}
+.window__titlebar {
+  height: 38px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  background: var(--titlebar-bg);
+  border-bottom: 0.5px solid var(--hairline);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+.window.inactive .window__titlebar {
+  opacity: 0.6;
+}
+.traffic {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.traffic.red {
+  background: var(--red);
+}
+.traffic.yellow {
+  background: var(--yellow);
+}
+.traffic.green {
+  background: var(--green);
+}
+.window.inactive .traffic {
+  background: rgba(120, 120, 128, 0.4);
+}
+.traffic svg {
+  opacity: 0;
+  transition: opacity 0.1s var(--ease);
+  color: rgba(0, 0, 0, 0.55);
+}
+.window__traffic:hover .traffic svg {
+  opacity: 1;
+}
+.window__traffic {
+  display: flex;
+  gap: 8px;
+}
+.window__title {
+  position: absolute;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+  pointer-events: none;
+}
+.window__body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  min-height: 0;
+}
+.window__resize {
+  position: absolute;
+  z-index: 3;
+}
+.window__resize.n {
+  top: 0;
+  left: 8px;
+  right: 8px;
+  height: 5px;
+  cursor: ns-resize;
+}
+.window__resize.s {
+  bottom: 0;
+  left: 8px;
+  right: 8px;
+  height: 5px;
+  cursor: ns-resize;
+}
+.window__resize.e {
+  right: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 5px;
+  cursor: ew-resize;
+}
+.window__resize.w {
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 5px;
+  cursor: ew-resize;
+}
+.window__resize.ne,
+.window__resize.nw,
+.window__resize.se,
+.window__resize.sw {
+  width: 14px;
+  height: 14px;
+}
+.window__resize.ne {
+  top: 0;
+  right: 0;
+  cursor: nesw-resize;
+}
+.window__resize.nw {
+  top: 0;
+  left: 0;
+  cursor: nwse-resize;
+}
+.window__resize.se {
+  bottom: 0;
+  right: 0;
+  cursor: nwse-resize;
+}
+.window__resize.sw {
+  bottom: 0;
+  left: 0;
+  cursor: nesw-resize;
+}
+
+/* Mission Control */
+.mission {
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(30px) saturate(150%);
+  -webkit-backdrop-filter: blur(30px) saturate(150%);
+  padding: 70px 60px 130px;
+  animation: fadeIn 0.2s var(--ease);
+  overflow: auto;
+}
+.mission__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  justify-content: center;
+  align-content: flex-start;
+}
+.mission__card {
+  width: 340px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--window-bg);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+  transition: transform 0.18s var(--ease);
+}
+.mission__card:hover {
+  transform: translateY(-6px) scale(1.02);
+}
+.mission__card .mission__thumb {
+  height: 190px;
+  background: var(--window-bg-2);
+  display: grid;
+  place-items: center;
+  color: var(--text-3);
+}
+.mission__card .mission__name {
+  padding: 8px 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* ===========================================================================
+   App Switcher (Cmd+Tab)
+   =========================================================================== */
+.switcher {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9500;
+  display: flex;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: rgba(60, 60, 66, 0.6);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.switcher__item {
+  width: 84px;
+  height: 84px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+}
+.switcher__item.active {
+  background: rgba(255, 255, 255, 0.22);
+}
+.switcher__item img {
+  width: 100%;
+  height: 100%;
+}
+.switcher__label {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 14px;
+  white-space: nowrap;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Dialog sheet */
+.dialog-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 9800;
+  background: rgba(0, 0, 0, 0.16);
+  display: grid;
+  place-items: center;
+  animation: fadeIn 0.15s var(--ease);
+}
+.dialog {
+  width: 300px;
+  border-radius: 12px;
+  background: var(--sheet-bg);
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+  padding: 20px;
+  text-align: center;
+  animation: dialogIn 0.22s var(--ease-out);
+}
+@keyframes dialogIn {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.dialog__icon {
+  margin: 0 auto 12px;
+  width: 56px;
+  height: 56px;
+}
+.dialog h3 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
+.dialog p {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+.dialog__actions {
+  display: flex;
+  gap: 8px;
+}
+.btn {
+  flex: 1;
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: 13px;
+  background: var(--control-bg);
+  box-shadow: inset 0 0 0 0.5px var(--control-hairline);
+  transition: filter 0.12s var(--ease);
+}
+.btn:hover {
+  filter: brightness(0.96);
+}
+.btn.primary {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: none;
+  font-weight: 500;
+}
+.btn.danger {
+  background: var(--red);
+  color: #fff;
+  box-shadow: none;
+  font-weight: 500;
+}
+
+/* ===========================================================================
+   First-load hint
+   =========================================================================== */
+.hint {
+  position: fixed;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  z-index: 4500;
+  padding: 8px 16px;
+  border-radius: 100px;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--menu-bg);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: var(--shadow-menu);
+  animation: hintIn 0.5s var(--ease-out);
+}
+@keyframes hintIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+}
+
+/* Screen dim overlay for brightness */
+.dim-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  pointer-events: none;
+  z-index: 9998;
+  transition: opacity 0.2s var(--ease);
+}
